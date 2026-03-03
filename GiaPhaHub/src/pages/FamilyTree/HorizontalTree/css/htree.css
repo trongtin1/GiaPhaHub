@@ -1,0 +1,92 @@
+/* ── Horizontal Tree Variables ─────────────────────────────── */
+:root {
+  --htree-h-gap: 48px;
+  --htree-v-pad: 12px;
+  --htree-line: 2px;
+  --htree-color: rgba(156, 163, 175, 0.8);
+}
+
+/* ── Node row: card + children side by side ────────────────── */
+.htree-node {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+/* ── Children container (stacked vertically to the right) ─── */
+.htree-children {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0;
+  margin: 0 0 0 var(--htree-h-gap);
+  position: relative;
+}
+
+/* Horizontal line: parent card right edge → vertical bar ────── */
+.htree-children::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--htree-h-gap));
+  width: calc(var(--htree-h-gap) / 2);
+  top: 50%;
+  transform: translateY(-50%);
+  height: var(--htree-line);
+  background: var(--htree-color);
+}
+
+/* ── Each child item ───────────────────────────────────────── */
+.htree-children > li {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: var(--htree-v-pad) 0;
+}
+
+/* Vertical bar connecting all siblings */
+.htree-children > li::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--htree-h-gap) / 2);
+  transform: translateX(-50%);
+  top: 0;
+  bottom: 0;
+  width: var(--htree-line);
+  background: var(--htree-color);
+}
+
+/* Clip first-child's bar above its midpoint */
+.htree-children > li:first-child::before {
+  top: 50%;
+}
+
+/* Clip last-child's bar below its midpoint */
+.htree-children > li:last-child::before {
+  bottom: 50%;
+}
+
+/* Hide bar when there's only one child */
+.htree-children > li:only-child::before {
+  display: none;
+}
+
+/* Horizontal line: vertical bar → child card left edge */
+.htree-children > li::after {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--htree-h-gap) / 2);
+  transform: translateX(-50%);
+  width: calc(var(--htree-h-gap) / 2 + 1px);
+  height: var(--htree-line);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--htree-color);
+}
+
+/* ── Couple group (horizontal) ─────────────────────────────── */
+.htree-couple {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}

@@ -1,0 +1,70 @@
+/* ── Tree Variables ────────────────────────────────────────── */
+:root {
+  --tree-gap: 36px;
+  --tree-h-pad: 20px;
+  --tree-line: 2px;
+  --tree-color: rgba(156, 163, 175, 0.8);
+}
+
+/* ── Children container ────────────────────────────────────── */
+.tree-children {
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  margin-top: var(--tree-gap);
+  padding: 0;
+}
+
+/* vertical line: parent card → horizontal bar */
+.tree-children::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--tree-gap));
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--tree-line);
+  height: var(--tree-gap);
+  background: var(--tree-color);
+}
+
+/* ── Each child node ───────────────────────────────────────── */
+.tree-children > li {
+  padding: var(--tree-gap) var(--tree-h-pad) 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* horizontal bar across siblings */
+.tree-children > li::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: var(--tree-line);
+  background: var(--tree-color);
+}
+.tree-children > li:first-child::before { left: 50%; }
+.tree-children > li:last-child::before  { right: 50%; }
+.tree-children > li:only-child::before  { display: none; }
+
+/* vertical drop: horizontal bar → child card */
+.tree-children > li::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--tree-line);
+  height: var(--tree-gap);
+  background: var(--tree-color);
+}
+
+/* ── Couple group ──────────────────────────────────────────── */
+/* Equal-width cards so connector lands exactly at ring icon center */
+.tree-couple {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
