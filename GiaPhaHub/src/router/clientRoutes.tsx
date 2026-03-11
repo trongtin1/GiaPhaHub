@@ -12,7 +12,7 @@ const HorizontalFamilyTree = lazy(
 );
 const MemberDetail = lazy(() => import("@/pages/Member/MemberDetail"));
 export const clientRoutes: RouteObject[] = [
-  { path: "/", element: <LazyComponent component={Homepage} /> },
+  { path: "/", element: <Homepage /> },
   {
     path: "/family-tree/:familyId",
     element: <Layout />,
