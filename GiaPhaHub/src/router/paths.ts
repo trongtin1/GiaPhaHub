@@ -2,6 +2,8 @@ export const DEFAULT_FAMILY_ID = "1";
 
 export const paths = {
   home: "/",
+  login: "/login",
+  register: "/register",
   dashboard: (familyId = DEFAULT_FAMILY_ID) => `/family-tree/${familyId}/dashboard`,
   tree:      (familyId = DEFAULT_FAMILY_ID) => `/family-tree/${familyId}/tree`,
   grid:      (familyId = DEFAULT_FAMILY_ID) => `/family-tree/${familyId}/grid`,

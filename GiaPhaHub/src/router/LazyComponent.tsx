@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import ContentSkeleton from "@/components/common/Skeleton";
+import PageLoading from "@/components/common/PageLoading";
 
 interface LazyComponentProps {
   component: React.ComponentType;
@@ -8,7 +8,7 @@ interface LazyComponentProps {
 const LazyComponent: React.FC<LazyComponentProps> = ({ component }) => {
   const Component = component;
   return (
-    <Suspense fallback={<ContentSkeleton loading>{null}</ContentSkeleton>}>
+    <Suspense fallback={<PageLoading />}>
       <Component />
     </Suspense>
   );

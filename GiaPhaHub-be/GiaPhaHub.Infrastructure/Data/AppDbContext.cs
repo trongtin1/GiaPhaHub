@@ -135,5 +135,7 @@ public class AppDbContext : DbContext
             entity.Property(x => x.Description)
                 .HasColumnType("nvarchar(255)");
         });
+        // ── Seed Data ──────────────────────────
+        SeedData.Seed(modelBuilder);
     }
 }

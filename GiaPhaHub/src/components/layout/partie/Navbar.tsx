@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { TreePine, AlignJustify } from "lucide-react";
+import { TreePine, AlignJustify, LogIn, LogOut } from "lucide-react";
 import { Menu, Drawer, Button } from "antd";
 import {
   HomeOutlined,
@@ -11,12 +11,22 @@ import {
 } from "@ant-design/icons";
 import { useFamilyId } from "@/hooks/useFamilyId";
 import { paths } from "@/router/paths";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { logout } from "@/store/authSlice";
 
 const Navbar: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const familyId = useFamilyId();
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const accessToken = useAppSelector((s) => s.auth.accessToken);
+  const isLoggedIn = !!accessToken;
+
+  const handleLogout = async () => {
+    await dispatch(logout());
+    navigate("/");
+  };
 
   const menuItems = [
     { key: paths.home, icon: <HomeOutlined />, label: "Trang chủ" },
@@ -68,15 +78,31 @@ const Navbar: React.FC = () => {
           </Link>
 
           {/* Desktop menu */}
-          <div className="hidden md:block">
+          <div className="hidden md:flex items-center gap-4">
             <Menu
               mode="horizontal"
               selectedKeys={[selectedKey]}
-              defaultOpenKeys={["family-diagram"]}
               items={menuItems}
               onClick={handleNavigate}
               className="border-none! bg-transparent! min-w-80"
             />
+            {isLoggedIn ? (
+              <button
+                onClick={handleLogout}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:text-red-600 hover:bg-red-50 transition cursor-pointer border-none bg-transparent"
+              >
+                <LogOut size={16} />
+                Đăng xuất
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/login")}
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-sm font-bold text-white bg-linear-to-r from-amber-500 to-orange-600 shadow-md shadow-amber-500/20 hover:shadow-amber-500/35 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer border-none"
+              >
+                <LogIn size={16} />
+                Đăng nhập
+              </button>
+            )}
           </div>
 
           {/* Mobile toggle */}

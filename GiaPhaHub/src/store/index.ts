@@ -16,11 +16,12 @@ import { configureStore } from "@reduxjs/toolkit";
 import type { TypedUseSelectorHook } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
 import familyReducer, { saveToStorage } from "./familySlice";
+import authReducer from "./authSlice";
 
 export const store = configureStore({
   reducer: {
     family: familyReducer,
-    // auth: authReducer,      ← thêm vào đây khi có
+    auth: authReducer,
     // settings: settingsReducer,
   },
 });

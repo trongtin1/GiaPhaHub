@@ -162,6 +162,13 @@ namespace GiaPhaHub_be
             // ─────────────────────────────────────────────────────────────
             var app = builder.Build();
 
+            // ── Seed data nếu chưa có ─────────────────────────────────
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                await db.Database.MigrateAsync();
+            }
+
             // ── Chạy SQL scripts (stored procedures, ...) ────────────────
             await app.RunSqlScriptsAsync();
 
