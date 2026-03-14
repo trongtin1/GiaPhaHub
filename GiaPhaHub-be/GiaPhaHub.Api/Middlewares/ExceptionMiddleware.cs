@@ -31,6 +31,14 @@ public class ExceptionMiddleware
         try
         {
             await _next(context);
+
+            // bắt các status code như 401, 403, 404
+            if (context.Response.StatusCode >= 400 &&
+                context.Response.StatusCode < 600 &&
+                !context.Response.HasStarted)
+            {
+                await HandleStatusCodeAsync(context);
+            }
         }
         catch (Exception ex)
         {
@@ -43,7 +51,32 @@ public class ExceptionMiddleware
         }
     }
 
-    private Task HandleExceptionAsync(HttpContext context, Exception ex)
+    private async Task HandleStatusCodeAsync(HttpContext context)
+    {
+        HttpStatusCode statusCode = (HttpStatusCode)context.Response.StatusCode;
+
+        string message = statusCode switch
+        {
+            HttpStatusCode.Unauthorized => "Unauthorized",
+            HttpStatusCode.Forbidden => "Forbidden",
+            HttpStatusCode.NotFound => "Resource not found",
+            _ => "Request error"
+        };
+
+        var result = Result<object>.Failure(statusCode, message);
+
+        context.Response.ContentType = "application/json";
+
+        var json = JsonSerializer.Serialize(result,
+            new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+
+        await context.Response.WriteAsync(json);
+    }
+
+    private async Task HandleExceptionAsync(HttpContext context, Exception ex)
     {
         var message = _env.IsDevelopment()
             ? $"{ex.GetType().Name}: {ex.Message}"
@@ -63,7 +96,6 @@ public class ExceptionMiddleware
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
 
-        return context.Response.WriteAsync(json);
+        await context.Response.WriteAsync(json);
     }
-
 }
