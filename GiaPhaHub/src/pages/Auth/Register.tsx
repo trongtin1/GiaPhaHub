@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, User, UserPlus, Eye, EyeOff } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "@/store";
-import { register, clearError } from "@/store/authSlice";
+import { useAppDispatch, useAppSelector } from "@/features";
+import { register } from "@/features/slices/auth/thunks";
+import { clearError } from "@/features/slices/auth/slice";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -188,3 +189,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

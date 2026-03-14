@@ -1,12 +1,13 @@
-import { useFamily } from "@/context/useFamily";
 import { useZoomPan } from "@/hooks/useZoomPan";
 import TreeNode from "@/pages/FamilyTree/Tree/components/TreeNode";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import ZoomControls from "@/components/common/ZoomControls";
+import { useFamilyTree } from "@/pages/FamilyTree/useFamilyTree";
 import "./css/tree.css";
 
 export default function FamilyTree() {
-  const { getRootMembers } = useFamily();
+  const { getRootMembers, getChildren, getSpouse, loading, error } =
+    useFamilyTree();
   const rootMembers = getRootMembers();
   const {
     scale,
@@ -65,10 +66,23 @@ export default function FamilyTree() {
             transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
           }}
         >
-          {rootMembers.length > 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center min-h-75 text-lg text-gray-400">
+              <p>Đang tải cây gia phả...</p>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center min-h-75 text-lg text-red-500 text-center">
+              <p>{error}</p>
+            </div>
+          ) : rootMembers.length > 0 ? (
             <ul className="list-none flex justify-center">
               {rootMembers.map((root) => (
-                <TreeNode key={root.id} member={root} />
+                <TreeNode
+                  key={root.id}
+                  member={root}
+                  getChildren={getChildren}
+                  getSpouse={getSpouse}
+                />
               ))}
             </ul>
           ) : (

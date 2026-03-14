@@ -1,16 +1,19 @@
 import { createContext } from "react";
-import type { FamilyMember } from "../types";
+import type { FamilyMemberResponse, FamilyMemberRequest } from "../models/FamilyMember";
 
 export interface FamilyContextType {
-  members: FamilyMember[];
-  addMember: (member: Omit<FamilyMember, "id">) => void;
-  updateMember: (member: FamilyMember) => void;
-  deleteMember: (id: string) => void;
-  getMember: (id: string) => FamilyMember | undefined;
-  getChildren: (parentId: string) => FamilyMember[];
-  getSpouse: (memberId: string) => FamilyMember | undefined;
-  getParent: (memberId: string) => FamilyMember | undefined;
-  getRootMembers: () => FamilyMember[];
+  members: FamilyMemberResponse[];
+  loading: boolean;
+  error: string | null;
+  loadMembers: () => void;
+  addMember: (member: Omit<FamilyMemberRequest, "id">) => void;
+  updateMember: (member: { id: number; payload: Omit<FamilyMemberRequest, "id"> }) => void;
+  deleteMember: (id: number) => void;
+  getMember: (id: number) => FamilyMemberResponse | undefined;
+  getChildren: (parentId: number) => FamilyMemberResponse[];
+  getSpouse: (memberId: number) => FamilyMemberResponse | undefined;
+  getParent: (memberId: number) => FamilyMemberResponse | undefined;
+  getRootMembers: () => FamilyMemberResponse[];
 }
 
 export const FamilyContext = createContext<FamilyContextType | null>(null);

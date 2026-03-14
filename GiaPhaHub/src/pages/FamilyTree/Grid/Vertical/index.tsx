@@ -3,22 +3,25 @@ import { User, Pencil, Trash2, Eye } from "lucide-react";
 import { Tooltip, Button, Tag } from "antd";
 import { useFamilyId } from "@/hooks/useFamilyId";
 import { paths } from "@/router/paths";
-import type { FamilyMember } from "@/types";
+import type { FamilyMemberResponse } from "@/models/FamilyMember";
 
 interface Props {
-  members: FamilyMember[];
-  onEdit: (m: FamilyMember) => void;
-  onDelete: (m: FamilyMember) => void;
+  members: FamilyMemberResponse[];
+  onEdit: (m: FamilyMemberResponse) => void;
+  onDelete: (m: FamilyMemberResponse) => void;
 }
 
 export default function GenerationGrid({ members, onEdit, onDelete }: Props) {
   const navigate = useNavigate();
   const familyId = useFamilyId();
 
-  const byGen = members.reduce<Record<number, FamilyMember[]>>((acc, m) => {
-    (acc[m.generation] ??= []).push(m);
-    return acc;
-  }, {});
+  const byGen = members.reduce<Record<number, FamilyMemberResponse[]>>(
+    (acc, m) => {
+      (acc[m.generation] ??= []).push(m);
+      return acc;
+    },
+    {},
+  );
 
   const generations = Object.keys(byGen)
     .map(Number)

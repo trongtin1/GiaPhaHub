@@ -1,19 +1,16 @@
 import axios from "./axios";
-import type { FamilyMember } from "@/types";
-import type {
-  GetListResponse,
-  BaseResponse,
-} from "../models/ResponseModels";
+import type { FamilyMemberResponse, FamilyMemberRequest } from "@/models/FamilyMember";
+import type { GetListResponse, BaseResponse } from "@/models/ResponseModels";
 
 export const FamilyService = {
-  getAll: async (): Promise<GetListResponse<FamilyMember>> => {
+  getAll: async (): Promise<GetListResponse<FamilyMemberResponse>> => {
     return await axios({
       method: "get",
       url: "/FamilyMember",
     });
   },
 
-  getOne: async (id: string): Promise<BaseResponse<FamilyMember>> => {
+  getOne: async (id: number): Promise<BaseResponse<FamilyMemberResponse>> => {
     return await axios({
       method: "get",
       url: `/FamilyMember/${id}`,
@@ -21,8 +18,8 @@ export const FamilyService = {
   },
 
   create: async (
-    payload: Omit<FamilyMember, "id">
-  ): Promise<BaseResponse<FamilyMember>> => {
+    payload: Omit<FamilyMemberRequest, "id">,
+  ): Promise<BaseResponse<FamilyMemberResponse>> => {
     return await axios({
       method: "post",
       url: "/FamilyMember",
@@ -31,9 +28,9 @@ export const FamilyService = {
   },
 
   update: async (
-    id: string,
-    payload: FamilyMember
-  ): Promise<BaseResponse<FamilyMember>> => {
+    id: number,
+    payload: Omit<FamilyMemberRequest, "id">,
+  ): Promise<BaseResponse<FamilyMemberResponse>> => {
     return await axios({
       method: "put",
       url: `/FamilyMember/${id}`,
@@ -41,10 +38,17 @@ export const FamilyService = {
     });
   },
 
-  delete: async (id: string): Promise<BaseResponse<FamilyMember>> => {
+  delete: async (id: number): Promise<BaseResponse<FamilyMemberResponse>> => {
     return await axios({
       method: "delete",
       url: `/FamilyMember/${id}`,
+    });
+  },
+
+  getTree: async (rootId: number): Promise<BaseResponse<FamilyMemberResponse>> => {
+    return await axios({
+      method: "get",
+      url: `/FamilyMember/tree/${rootId}`,
     });
   },
 };

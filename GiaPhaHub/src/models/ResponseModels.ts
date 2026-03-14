@@ -7,7 +7,7 @@ export interface BaseResponse<T> {
 }
 
 export interface GetListResponse<T> {
-  data: T[];
+  data: Page<T>;
   isFailure: boolean;
   isSuccess: boolean;
   message: string;

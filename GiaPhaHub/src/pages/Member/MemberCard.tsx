@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { User, Calendar, MapPin, Heart } from "lucide-react";
-import type { FamilyMember } from "@/types";
+import type { FamilyMemberResponse } from "@/models/FamilyMember";
 import { useFamily } from "@/context/useFamily";
 
 interface MemberCardProps {
-  member: FamilyMember;
+  member: FamilyMemberResponse;
   compact?: boolean;
 }
 

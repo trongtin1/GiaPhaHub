@@ -1,67 +1,74 @@
-/**
- * FamilyContext.tsx
- *
- * Provider mỏng — chỉ đọc state từ Redux và cung cấp
- * các helper function tiện dụng qua context cho toàn app.
- *
- * Tại sao vẫn giữ Context?
- * → Các helper như getMember(), getChildren() dùng nhiều ở component.
- *   Đặt chúng ở đây tránh viết lại logic tại mỗi component.
- *
- * Khi nối BE: chỉ cần thay dispatch(syncAction) → dispatch(asyncThunk)
- * mà không cần sửa bất kỳ component nào.
- */
-
-import { type ReactNode } from "react";
-import type { FamilyMember } from "@/types";
+import { useEffect, type ReactNode } from "react";
+import type { FamilyMemberRequest } from "@/models/FamilyMember";
 import { FamilyContext } from "./familyContextDef";
-import { useAppDispatch, useAppSelector } from "@/store";
+import { useAppDispatch, useAppSelector } from "@/features";
+import { getParentId, getSpouseId } from "@/utils/relationshipUtils";
 import {
-  addMember as addMemberAction,
-  updateMember as updateMemberAction,
-  deleteMember as deleteMemberAction,
+  fetchMembers,
+  createMember,
+  editMember,
+  removeMember,
+} from "@/features/slices/family/thunks";
+import {
   selectAllMembers,
-} from "@/store/familySlice";
+  selectFamilyLoading,
+  selectFamilyError,
+} from "@/features/slices/family/selectors";
 
 export function FamilyProvider({ children }: { children: ReactNode }) {
   const dispatch = useAppDispatch();
   const members = useAppSelector(selectAllMembers);
+  const loading = useAppSelector(selectFamilyLoading);
+  const error = useAppSelector(selectFamilyError);
+  // const accessToken = useAppSelector((state) => state.auth.accessToken);
 
-  // ── CRUD ────────────────────────────────────────────────
-  // Khi có BE: đổi thành dispatch(createMember(member)) từ familyThunks
-  const addMember = (member: Omit<FamilyMember, "id">) =>
-    dispatch(addMemberAction(member));
+  useEffect(() => {
+    dispatch(fetchMembers());
+  }, [dispatch]);
 
-  const updateMember = (member: FamilyMember) =>
-    dispatch(updateMemberAction(member));
+  // ── CRUD (async thunks) ─────────────────────────────────
+  const loadMembers = () => dispatch(fetchMembers());
 
-  const deleteMember = (id: string) => dispatch(deleteMemberAction(id));
+  const addMember = (member: Omit<FamilyMemberRequest, "id">) =>
+    dispatch(createMember(member));
+
+  const updateMember = (member: {
+    id: number;
+    payload: Omit<FamilyMemberRequest, "id">;
+  }) => dispatch(editMember(member));
+
+  const deleteMember = (id: number) => dispatch(removeMember(id));
 
   // ── Query helpers ────────────────────────────────────────
-  const getMember = (id: string) => members.find((m) => m.id === id);
+  const getMember = (id: number) => members.find((m) => m.id === id);
 
-  const getChildren = (parentId: string) =>
-    members.filter((m) => m.parentId === parentId);
+  const getChildren = (parentId: number) =>
+    members.filter((m) => getParentId(m) === parentId);
 
-  const getSpouse = (memberId: string) => {
+  const getSpouse = (memberId: number) => {
     const member = getMember(memberId);
-    if (member?.spouseId) return getMember(member.spouseId);
-    return members.find((m) => m.spouseId === memberId);
+    const spouseId = getSpouseId(member);
+    if (spouseId) return getMember(spouseId);
+    return members.find((m) => getSpouseId(m) === memberId);
   };
 
-  const getParent = (memberId: string) => {
+  const getParent = (memberId: number) => {
     const member = getMember(memberId);
-    if (member?.parentId) return getMember(member.parentId);
+    const parentId = getParentId(member);
+    if (parentId) return getMember(parentId);
     return undefined;
   };
 
   const getRootMembers = () =>
-    members.filter((m) => !m.parentId && !m.spouseId);
+    members.filter((m) => !getParentId(m) && !getSpouseId(m));
 
   return (
     <FamilyContext.Provider
       value={{
         members,
+        loading,
+        error,
+        loadMembers,
         addMember,
         updateMember,
         deleteMember,
@@ -76,3 +83,4 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
     </FamilyContext.Provider>
   );
 }
+

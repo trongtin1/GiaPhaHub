@@ -88,6 +88,7 @@ public static class SeedData
                 DeathDate = new DateTime(2015, 3, 20),
                 Bio = "Người sáng lập gia phả",
                 FamilyTreeId = 1,
+                Generation = 1,
                 IsDelete = false,
                 CreateDate = SeedDate,
                 ModifiedDate = SeedDate
@@ -101,6 +102,7 @@ public static class SeedData
                 DeathDate = new DateTime(2020, 12, 1),
                 Bio = "Vợ ông Nguyễn Văn An",
                 FamilyTreeId = 1,
+                Generation = 1,
                 IsDelete = false,
                 CreateDate = SeedDate,
                 ModifiedDate = SeedDate
@@ -116,6 +118,7 @@ public static class SeedData
                 Address = "123 Nguyễn Huệ, Quận 1, TP.HCM",
                 Bio = "Con trai cả",
                 FamilyTreeId = 1,
+                Generation = 2,
                 IsDelete = false,
                 CreateDate = SeedDate,
                 ModifiedDate = SeedDate
@@ -130,6 +133,7 @@ public static class SeedData
                 Address = "123 Nguyễn Huệ, Quận 1, TP.HCM",
                 Bio = "Vợ anh Nguyễn Văn Cường",
                 FamilyTreeId = 1,
+                Generation = 2,
                 IsDelete = false,
                 CreateDate = SeedDate,
                 ModifiedDate = SeedDate
@@ -144,6 +148,7 @@ public static class SeedData
                 Address = "456 Lê Lợi, Quận 3, TP.HCM",
                 Bio = "Con gái thứ hai",
                 FamilyTreeId = 1,
+                Generation = 2,
                 IsDelete = false,
                 CreateDate = SeedDate,
                 ModifiedDate = SeedDate
@@ -159,6 +164,7 @@ public static class SeedData
                 Address = "789 Trần Hưng Đạo, Quận 5, TP.HCM",
                 Bio = "Con trai anh Cường",
                 FamilyTreeId = 1,
+                Generation = 3,
                 IsDelete = false,
                 CreateDate = SeedDate,
                 ModifiedDate = SeedDate
@@ -173,6 +179,7 @@ public static class SeedData
                 Address = "123 Nguyễn Huệ, Quận 1, TP.HCM",
                 Bio = "Con gái anh Cường",
                 FamilyTreeId = 1,
+                Generation = 3,
                 IsDelete = false,
                 CreateDate = SeedDate,
                 ModifiedDate = SeedDate

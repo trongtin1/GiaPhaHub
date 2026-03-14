@@ -1,13 +1,14 @@
-import { useFamily } from "@/context/useFamily";
 import { useZoomPan } from "@/hooks/useZoomPan";
-import HorizontalTreeNode from "@/pages/FamilyTree/HorizontalTree/components/HorizontalTreeNode";
+import HorizontalTreeNode from "@/pages/FamilyTree/Grid/Horizontal/components/HorizontalTreeNode";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import ZoomControls from "@/components/common/ZoomControls";
 import { paths } from "@/router/paths";
+import { useFamilyTree } from "@/pages/FamilyTree/useFamilyTree";
 import "./css/htree.css";
 
 export default function HorizontalFamilyTree() {
-  const { getRootMembers } = useFamily();
+  const { getRootMembers, getChildren, getSpouse, loading, error } =
+    useFamilyTree();
   const rootMembers = getRootMembers();
   const {
     scale,
@@ -72,10 +73,23 @@ export default function HorizontalFamilyTree() {
             transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
           }}
         >
-          {rootMembers.length > 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center min-h-75 text-lg text-gray-400">
+              <p>Đang tải cây gia phả...</p>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center min-h-75 text-lg text-red-500 text-center">
+              <p>{error}</p>
+            </div>
+          ) : rootMembers.length > 0 ? (
             <ul className="list-none flex flex-col gap-0">
               {rootMembers.map((root) => (
-                <HorizontalTreeNode key={root.id} member={root} />
+                <HorizontalTreeNode
+                  key={root.id}
+                  member={root}
+                  getChildren={getChildren}
+                  getSpouse={getSpouse}
+                />
               ))}
             </ul>
           ) : (

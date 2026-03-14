@@ -11,12 +11,11 @@
  *   2. Import reducer và thêm vào object reducer bên dưới
  *   3. TypeScript sẽ tự cập nhật RootState
  */
-
 import { configureStore } from "@reduxjs/toolkit";
 import type { TypedUseSelectorHook } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
-import familyReducer, { saveToStorage } from "./familySlice";
-import authReducer from "./authSlice";
+import familyReducer from "./slices/family/slice";
+import authReducer from "./slices/auth/slice";
 
 export const store = configureStore({
   reducer: {
@@ -25,9 +24,6 @@ export const store = configureStore({
     // settings: settingsReducer,
   },
 });
-
-// Persist family state sau mỗi action bất kỳ
-store.subscribe(() => saveToStorage(store.getState().family.data));
 
 // ── Types ─────────────────────────────────────────────────────
 export type RootState = ReturnType<typeof store.getState>;

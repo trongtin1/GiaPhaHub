@@ -9,9 +9,14 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         //FamilyMember
-        CreateMap<FamilyMember, FamilyMemberResponse>();
-        CreateMap<CreateFamilyMemberRequest, FamilyMember>();
-        CreateMap<UpdateFamilyMemberRequest, FamilyMember>()
+        CreateMap<FamilyMember, FamilyMemberResponse>()
+            .ForMember(dest => dest.FatherId, opt => opt.Ignore())
+            .ForMember(dest => dest.MotherId, opt => opt.Ignore())
+            .ForMember(dest => dest.Spouses, opt => opt.Ignore())
+            .ForMember(dest => dest.Children, opt => opt.Ignore())
+            .ForMember(dest => dest.Members, opt => opt.Ignore())
+            .ForMember(dest => dest.Relationships, opt => opt.Ignore());
+        CreateMap<FamilyMemberRequest, FamilyMember>()
             .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
         //FamilyTree
         CreateMap<FamilyTree, FamilyTreeResponse>();

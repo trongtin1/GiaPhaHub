@@ -11,14 +11,22 @@ import {
 import { useFamily } from "@/context/useFamily";
 import MemberForm from "@/components/MemberForm";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
-import GenerationGrid from "@/pages/Member/components/GenerationGrid";
-import HorizontalTreeNode from "@/pages/FamilyTree/HorizontalTree/components/HorizontalTreeNode";
+import GenerationGrid from "@/pages/FamilyTree/Grid/Vertical";
+import HorizontalTreeNode from "@/pages/FamilyTree/Grid/Horizontal/components/HorizontalTreeNode";
 import { paths } from "@/router/paths";
-import type { FamilyMember } from "@/types";
-import "@/pages/FamilyTree/HorizontalTree/css/htree.css";
+import type { FamilyMemberResponse } from "@/models/FamilyMember";
+import { useFamilyTree } from "@/pages/FamilyTree/useFamilyTree";
+import "@/pages/FamilyTree/Grid/Horizontal/css/htree.css";
 
 export default function FamilyGrid() {
-  const { members, deleteMember, getRootMembers } = useFamily();
+  const { members, deleteMember } = useFamily();
+  const {
+    getRootMembers: getTreeRootMembers,
+    getChildren: getTreeChildren,
+    getSpouse: getTreeSpouse,
+    loading: treeLoading,
+    error: treeError,
+  } = useFamilyTree();
 
   const [viewMode, setViewMode] = useState<"grid" | "htree">("grid");
   const [search, setSearch] = useState("");
@@ -28,7 +36,9 @@ export default function FamilyGrid() {
     "",
   );
   const [formOpen, setFormOpen] = useState(false);
-  const [editMember, setEditMember] = useState<FamilyMember | null>(null);
+  const [editMember, setEditMember] = useState<FamilyMemberResponse | null>(
+    null,
+  );
 
   const {
     scale,
@@ -57,7 +67,7 @@ export default function FamilyGrid() {
     return matchSearch && matchGender && matchGen && matchStatus;
   });
 
-  const handleEdit = (member: FamilyMember) => {
+  const handleEdit = (member: FamilyMemberResponse) => {
     setEditMember(member);
     setFormOpen(true);
   };
@@ -67,7 +77,7 @@ export default function FamilyGrid() {
     setFormOpen(true);
   };
 
-  const handleDelete = (member: FamilyMember) => {
+  const handleDelete = (member: FamilyMemberResponse) => {
     Modal.confirm({
       title: "Xóa thành viên",
       icon: <ExclamationCircleFilled />,
@@ -86,7 +96,7 @@ export default function FamilyGrid() {
     });
   };
 
-  const rootMembers = getRootMembers();
+  const treeRootMembers = getTreeRootMembers();
 
   return (
     <div className="max-w-300 mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-[fadeIn_0.4s_ease]">
@@ -216,10 +226,23 @@ export default function FamilyGrid() {
               transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
             }}
           >
-            {rootMembers.length > 0 ? (
+            {treeLoading ? (
+              <div className="flex items-center justify-center min-h-75 text-lg text-gray-400">
+                <p>Đang tải cây gia phả...</p>
+              </div>
+            ) : treeError ? (
+              <div className="flex items-center justify-center min-h-75 text-lg text-red-500 text-center">
+                <p>{treeError}</p>
+              </div>
+            ) : treeRootMembers.length > 0 ? (
               <ul className="list-none flex flex-col gap-0">
-                {rootMembers.map((root) => (
-                  <HorizontalTreeNode key={root.id} member={root} />
+                {treeRootMembers.map((root) => (
+                  <HorizontalTreeNode
+                    key={root.id}
+                    member={root}
+                    getChildren={getTreeChildren}
+                    getSpouse={getTreeSpouse}
+                  />
                 ))}
               </ul>
             ) : (

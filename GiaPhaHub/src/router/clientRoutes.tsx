@@ -3,6 +3,7 @@ import type { RouteObject } from "react-router-dom";
 import Layout from "@/components/layout";
 import LazyComponent from "./LazyComponent";
 import ProtectedRoute from "./ProtectedRoute";
+import { FamilyProvider } from "@/context/FamilyContext";
 
 const Homepage = lazy(() => import("@/pages/Homepage"));
 const LoginPage = lazy(() => import("@/pages/Auth/Login"));
@@ -11,7 +12,7 @@ const Members = lazy(() => import("@/pages/Member"));
 const FamilyTree = lazy(() => import("@/pages/FamilyTree/Tree"));
 const FamilyGrid = lazy(() => import("@/pages/FamilyTree/Grid"));
 const HorizontalFamilyTree = lazy(
-  () => import("@/pages/FamilyTree/HorizontalTree"),
+  () => import("@/pages/FamilyTree/Grid/Horizontal"),
 );
 const MemberDetail = lazy(() => import("@/pages/Member/MemberDetail"));
 export const clientRoutes: RouteObject[] = [
@@ -23,7 +24,11 @@ export const clientRoutes: RouteObject[] = [
     children: [
       {
         path: "/family-tree/:familyId",
-        element: <Layout />,
+        element: (
+          <FamilyProvider>
+            <Layout />
+          </FamilyProvider>
+        ),
         children: [
           { path: "members", element: <LazyComponent component={Members} /> },
           {

@@ -11,8 +11,8 @@ import {
 } from "@ant-design/icons";
 import { useFamilyId } from "@/hooks/useFamilyId";
 import { paths } from "@/router/paths";
-import { useAppDispatch, useAppSelector } from "@/store";
-import { logout } from "@/store/authSlice";
+import { useAppDispatch, useAppSelector } from "@/features";
+import { logout } from "@/features/slices/auth/thunks";
 
 const Navbar: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -144,3 +144,4 @@ const Navbar: React.FC = () => {
 };
 
 export default Navbar;
+

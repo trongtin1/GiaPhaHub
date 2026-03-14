@@ -1,20 +1,24 @@
 import { useNavigate } from "react-router-dom";
 import { User } from "lucide-react";
-import { useFamily } from "@/context/useFamily";
 import { useFamilyId } from "@/hooks/useFamilyId";
 import { paths } from "@/router/paths";
-import type { FamilyMember } from "@/types";
+import type { FamilyMemberResponse } from "@/models/FamilyMember";
 
 interface TreeNodeProps {
-  member: FamilyMember;
+  member: FamilyMemberResponse;
+  getChildren: (member: FamilyMemberResponse) => FamilyMemberResponse[];
+  getSpouse: (member: FamilyMemberResponse) => FamilyMemberResponse | undefined;
 }
 
-export default function TreeNode({ member }: TreeNodeProps) {
-  const { getChildren, getSpouse } = useFamily();
+export default function TreeNode({
+  member,
+  getChildren,
+  getSpouse,
+}: TreeNodeProps) {
   const navigate = useNavigate();
   const familyId = useFamilyId();
-  const children = getChildren(member.id);
-  const spouse = getSpouse(member.id);
+  const children = getChildren(member);
+  const spouse = getSpouse(member);
 
   const cardBase =
     "flex flex-col items-center gap-1.5 p-3.5 px-4.5 min-w-[120px] text-center rounded-xl cursor-pointer transition-all duration-250 bg-white hover:-translate-y-0.5 shadow-sm";
@@ -85,7 +89,12 @@ export default function TreeNode({ member }: TreeNodeProps) {
       {children.length > 0 && (
         <ul className="tree-children">
           {children.map((child) => (
-            <TreeNode key={child.id} member={child} />
+            <TreeNode
+              key={child.id}
+              member={child}
+              getChildren={getChildren}
+              getSpouse={getSpouse}
+            />
           ))}
         </ul>
       )}

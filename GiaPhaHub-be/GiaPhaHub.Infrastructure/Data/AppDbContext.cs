@@ -92,7 +92,8 @@ public class AppDbContext : DbContext
 
             entity.Property(x => x.Bio)
                 .HasColumnType("nvarchar(max)");
-
+            entity.Property(x => x.Generation)
+                .HasColumnType("int");
             entity.HasOne(x => x.FamilyTree)
                 .WithMany(x => x.Members)
                 .HasForeignKey(x => x.FamilyTreeId);

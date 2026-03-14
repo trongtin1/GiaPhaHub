@@ -19,9 +19,16 @@ public class FamilyMemberController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll(QueryResource queryResource)
+    public async Task<IActionResult> GetAll([FromQuery] QueryResource queryResource)
     {
         var result = await _familyMemberService.GetAll(queryResource);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpGet("tree/{rootId}")]
+    public async Task<IActionResult> GetTreeByRootId(int rootId)
+    {
+        var result = await _familyMemberService.GetTreeByRootId(rootId);
         return StatusCode((int)result.StatusCode, result);
     }
 
@@ -33,14 +40,14 @@ public class FamilyMemberController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateFamilyMemberRequest request)
+    public async Task<IActionResult> Create([FromBody] FamilyMemberRequest request)
     {
         var result = await _familyMemberService.Create(request);
         return StatusCode((int)result.StatusCode, result);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateFamilyMemberRequest request)
+    public async Task<IActionResult> Update(int id, [FromBody] FamilyMemberRequest request)
     {
         var result = await _familyMemberService.Update(id, request);
         return StatusCode((int)result.StatusCode, result);

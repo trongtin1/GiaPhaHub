@@ -13,18 +13,19 @@ import {
 import { useState } from "react";
 import { useFamily } from "@/context/useFamily";
 import MemberForm from "@/components/MemberForm";
-import MemberCard from "@/components/MemberCard";
+import MemberCard from "@/pages/Member/MemberCard";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import { useFamilyId } from "@/hooks/useFamilyId";
 import { paths } from "@/router/paths";
-
+import dayjs from "dayjs";
 export default function MemberDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const familyId = useFamilyId();
   const { getMember, getChildren, getSpouse, getParent } = useFamily();
   const [editOpen, setEditOpen] = useState(false);
-  const member = getMember(id!);
+  const memberId = Number(id);
+  const member = getMember(memberId);
 
   if (!member) {
     return (
@@ -142,9 +143,17 @@ export default function MemberDetail() {
           </h3>
           <div className="flex flex-col gap-4">
             {member.birthDate &&
-              fieldRow(<Calendar size={16} />, "Ngày sinh", member.birthDate)}
+              fieldRow(
+                <Calendar size={16} />,
+                "Ngày sinh",
+                dayjs(member.birthDate).format("DD/MM/YYYY"),
+              )}
             {member.deathDate &&
-              fieldRow(<Calendar size={16} />, "Ngày mất", member.deathDate)}
+              fieldRow(
+                <Calendar size={16} />,
+                "Ngày mất",
+                dayjs(member.deathDate).format("DD/MM/YYYY"),
+              )}
             {age !== null &&
               fieldRow(
                 <User size={16} />,

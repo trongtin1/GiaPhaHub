@@ -2,12 +2,15 @@ import { useEffect } from "react";
 import { Modal, Form, Input, Select, DatePicker } from "antd";
 import dayjs from "dayjs";
 import { useFamily } from "@/context/useFamily";
-import type { FamilyMember } from "@/types";
-
+import type {
+  FamilyMemberResponse,
+  FamilyMemberRequest,
+} from "@/models/FamilyMember";
+import { getParentId, getSpouseId } from "@/utils/relationshipUtils";
 interface MemberFormProps {
   open: boolean;
   onClose: () => void;
-  editMember?: FamilyMember | null;
+  editMember?: FamilyMemberResponse | null;
 }
 
 export default function MemberForm({
@@ -21,6 +24,8 @@ export default function MemberForm({
   useEffect(() => {
     if (open) {
       if (editMember) {
+        const parentId = getParentId(editMember);
+        const spouseId = getSpouseId(editMember);
         form.setFieldsValue({
           name: editMember.name,
           gender: editMember.gender,
@@ -29,8 +34,8 @@ export default function MemberForm({
           phone: editMember.phone || "",
           address: editMember.address || "",
           bio: editMember.bio || "",
-          parentId: editMember.parentId || undefined,
-          spouseId: editMember.spouseId || undefined,
+          parentId,
+          spouseId,
         });
       } else {
         form.resetFields();
@@ -45,7 +50,7 @@ export default function MemberForm({
     (m) =>
       m.id !== editMember?.id &&
       m.id !== form.getFieldValue("parentId") &&
-      m.parentId !== editMember?.id,
+      getParentId(m) !== editMember?.id,
   );
 
   const handleFinish = (values: Record<string, unknown>) => {
@@ -55,7 +60,7 @@ export default function MemberForm({
       if (parent) generation = parent.generation + 1;
     }
 
-    const memberData = {
+    const memberData: Omit<FamilyMemberRequest, "id"> = {
       name: (values.name as string).trim(),
       gender: values.gender as "male" | "female",
       birthDate: values.birthDate
@@ -63,17 +68,19 @@ export default function MemberForm({
         : "",
       deathDate: values.deathDate
         ? (values.deathDate as dayjs.Dayjs).format("YYYY-MM-DD")
-        : undefined,
-      phone: (values.phone as string) || undefined,
-      address: (values.address as string) || undefined,
-      bio: (values.bio as string) || undefined,
-      parentId: (values.parentId as string) || undefined,
-      spouseId: (values.spouseId as string) || undefined,
+        : "",
+      phone: (values.phone as string) || "",
+      address: (values.address as string) || "",
+      bio: (values.bio as string) || "",
+      parentId: (values.parentId as number) || 0,
+      spouseId: (values.spouseId as number) || 0,
+      spouseRelationship: values.spouseId ? "Vợ/Chồng" : "",
+      avatar: "",
       generation,
     };
 
     if (editMember) {
-      updateMember({ ...memberData, id: editMember.id });
+      updateMember({ id: editMember.id, payload: memberData });
     } else {
       addMember(memberData);
     }
@@ -105,9 +112,7 @@ export default function MemberForm({
           <Input placeholder="Nhập họ và tên" />
         </Form.Item>
 
-        <div
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
-        >
+        <div className="grid grid-cols-2 gap-4">
           <Form.Item label="Giới tính" name="gender">
             <Select
               options={[
@@ -142,9 +147,7 @@ export default function MemberForm({
           <Input placeholder="Nhập địa chỉ" />
         </Form.Item>
 
-        <div
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
-        >
+        <div className="grid grid-cols-2 gap-4">
           <Form.Item label="Cha / Mẹ" name="parentId">
             <Select
               placeholder="-- Không --"

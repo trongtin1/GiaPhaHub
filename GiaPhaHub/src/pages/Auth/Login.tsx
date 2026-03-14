@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Mail, Lock, LogIn, Eye, EyeOff } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "@/store";
-import { login, clearError } from "@/store/authSlice";
+import { useAppDispatch, useAppSelector } from "@/features";
+import { login } from "@/features/slices/auth/thunks";
+import { clearError } from "@/features/slices/auth/slice";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -86,6 +87,7 @@ export default function LoginPage() {
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                 />
                 <input
+                  placeholder="admin123"
                   type={showPassword ? "text" : "password"}
                   required
                   minLength={6}
@@ -136,3 +138,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

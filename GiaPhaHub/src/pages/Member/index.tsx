@@ -10,7 +10,8 @@ import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 
 import { useFamilyId } from "@/hooks/useFamilyId";
 import { paths } from "@/router/paths";
-import type { FamilyMember } from "@/types";
+import dayjs from "dayjs";
+import { FamilyMemberResponse } from "@/models/FamilyMember";
 
 export default function Members() {
   const { members, deleteMember } = useFamily();
@@ -20,7 +21,9 @@ export default function Members() {
   const [filterGender, setFilterGender] = useState("");
   const [filterGen, setFilterGen] = useState("");
   const [formOpen, setFormOpen] = useState(false);
-  const [editMember, setEditMember] = useState<FamilyMember | null>(null);
+  const [editMember, setEditMember] = useState<FamilyMemberResponse | null>(
+    null,
+  );
 
   const generations = [...new Set(members.map((m) => m.generation))].sort();
 
@@ -31,7 +34,7 @@ export default function Members() {
     return matchSearch && matchGender && matchGen;
   });
 
-  const handleEdit = (member: FamilyMember) => {
+  const handleEdit = (member: FamilyMemberResponse) => {
     setEditMember(member);
     setFormOpen(true);
   };
@@ -39,7 +42,7 @@ export default function Members() {
     setEditMember(null);
     setFormOpen(true);
   };
-  const columns: TableColumnsType<FamilyMember> = [
+  const columns: TableColumnsType<FamilyMemberResponse> = [
     {
       title: "Họ và tên",
       dataIndex: "name",
@@ -72,7 +75,11 @@ export default function Members() {
       dataIndex: "birthDate",
       key: "birthDate",
       width: 130,
-      render: (d: string) => <span className="text-gray-500">{d || "—"}</span>,
+      render: (d: string) => (
+        <span className="text-gray-500">
+          {d ? dayjs(d).format("DD/MM/YYYY") : "—"}
+        </span>
+      ),
     },
     {
       title: "Thế hệ",
@@ -123,7 +130,7 @@ export default function Members() {
     },
   ];
 
-  const handleDelete = (member: FamilyMember) => {
+  const handleDelete = (member: FamilyMemberResponse) => {
     Modal.confirm({
       title: "Xóa thành viên",
       icon: <ExclamationCircleFilled />,
@@ -206,6 +213,7 @@ export default function Members() {
         dataSource={filtered}
         rowKey="id"
         size="middle"
+        expandable={{ childrenColumnName: "nestedMembers" }}
         pagination={{ pageSize: 15, showSizeChanger: false }}
         rowClassName={(m) => (m.deathDate ? "opacity-60" : "")}
         locale={{ emptyText: "Không tìm thấy thành viên nào" }}

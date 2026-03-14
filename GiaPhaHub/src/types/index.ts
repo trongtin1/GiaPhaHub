@@ -1,17 +1,32 @@
-export type Gender = 'male' | 'female';
+export type Gender = "male" | "female";
 
-export interface FamilyMember {
-  id: string;
+
+export interface FamilyTree {
+  id: number;
   name: string;
-  gender: Gender;
-  birthDate: string;
-  deathDate?: string;
-  avatar?: string;
-  phone?: string;
-  address?: string;
-  bio?: string;
-  parentId?: string;
-  spouseId?: string;
-  spouseRelationship?: 'married' | 'separated';
-  generation: number;
+  description?: string;
+  createDate: string;
+  modifiedDate: string;
+}
+
+export interface Relationship {
+  id: number;
+  fromMemberId: number;
+  toMemberId: number;
+  relationshipTypeId: number;
+  fromMemberName?: string;
+  toMemberName?: string;
+  relationshipTypeName?: string;
+}
+
+export interface RelationshipType {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface ResourceState<T> {
+  data: T;
+  loading: boolean;
+  error: string | null;
 }

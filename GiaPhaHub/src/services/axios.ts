@@ -1,7 +1,11 @@
 import axios from "axios";
-const VITE_API_URL = "http://localhost:5261/api";
+import { store } from "../features";
+import { logout, refreshToken } from "@/features/slices/auth/thunks";
+
+const API_URL = "http://localhost:5261/api";
+
 const instance = axios.create({
-  baseURL: VITE_API_URL,
+  baseURL: API_URL,
   timeout: 10000,
   withCredentials: true,
   headers: {
@@ -9,25 +13,93 @@ const instance = axios.create({
   },
 });
 
-// Request interceptor – gắn access token
+/* ========================
+   Request interceptor
+======================== */
+
 instance.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
+  const token = store.getState().auth.accessToken;
+
   if (token) {
+    config.headers = config.headers || {};
     config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
 
-// Response interceptor – trả thẳng response.data
+/* ========================
+   Refresh token queue
+======================== */
+
+let isRefreshing = false;
+
+let failedQueue: {
+  resolve: () => void;
+  reject: (error: unknown) => void;
+}[] = [];
+
+const processQueue = (error: unknown) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve();
+    }
+  });
+
+  failedQueue = [];
+};
+
+/* ========================
+   Response interceptor
+======================== */
+
 instance.interceptors.response.use(
   (response) => response.data,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("accessToken");
+
+  async (error) => {
+    const originalRequest = error.config;
+    const status = error.response?.status;
+
+    if (status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      /* Nếu chưa refresh */
+      if (!isRefreshing) {
+        isRefreshing = true;
+
+        try {
+          // refresh token
+          await store.dispatch(refreshToken()).unwrap();
+
+          // retry các request đang queue
+          processQueue(null);
+
+          // retry request hiện tại
+          return instance(originalRequest);
+        } catch (refreshError) {
+          processQueue(refreshError);
+
+          return Promise.reject(refreshError);
+        } finally {
+          isRefreshing = false;
+        }
+      }
+
+      /* Nếu đang refresh → đưa request vào queue */
+
+      return new Promise<void>((resolve, reject) => {
+        failedQueue.push({ resolve, reject });
+      })
+        .then(() => {
+          return instance(originalRequest);
+        })
+        .catch((err) => Promise.reject(err));
     }
-    console.error("API Error:", error?.response?.data || error.message);
-    return Promise.reject(error?.response?.data || error);
+
+    return Promise.reject(error.response?.data || error);
   },
 );
 
 export default instance;
+

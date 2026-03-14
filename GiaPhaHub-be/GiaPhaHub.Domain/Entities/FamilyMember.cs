@@ -19,6 +19,7 @@ public class FamilyMember : EntityTrackable<int>
     public string? Address { get; set; }
 
     public string? Bio { get; set; }
+    public int Generation { get; set; }
 
     // thuộc cây gia phả nào
     public int FamilyTreeId { get; set; }
