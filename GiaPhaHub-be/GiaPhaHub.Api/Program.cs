@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.DependencyInjection;
+using GiaPhaHub_be.Api.Profiles;
 
 namespace GiaPhaHub_be
 {
@@ -147,9 +149,12 @@ namespace GiaPhaHub_be
                     await httpContext.Response.WriteAsync(json, token);
                 };
             });
-
+            // ── AutoMapper ─────────────────────────────────────────────────
+            builder.Services.AddAutoMapper(cfg =>
+            {
+                cfg.AddMaps(typeof(MappingProfile).Assembly);
+            });
             // ── DI ────────────────────────────────────────────────────────
-            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IFamilyMemberService, FamilyMemberService>();
