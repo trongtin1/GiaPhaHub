@@ -21,6 +21,9 @@ import "@/pages/FamilyTree/Grid/Horizontal/css/htree.css";
 export default function FamilyGrid() {
   const { members, deleteMember } = useFamily();
   const {
+    members: treeMembers,
+    selectedRootId,
+    setSelectedRootId,
     getRootMembers: getTreeRootMembers,
     getChildren: getTreeChildren,
     getSpouse: getTreeSpouse,
@@ -129,6 +132,21 @@ export default function FamilyGrid() {
               },
             ]}
           />
+          {viewMode === "htree" && (
+            <Select
+              value={selectedRootId ?? undefined}
+              onChange={setSelectedRootId}
+              placeholder="Chọn thành viên gốc"
+              style={{ minWidth: 240 }}
+              options={treeMembers.map((member) => ({
+                value: member.id,
+                label: `${member.name} (Đời ${member.generation})`,
+              }))}
+              showSearch
+              optionFilterProp="label"
+              loading={treeLoading}
+            />
+          )}
           <button
             className="inline-flex items-center gap-2 px-5 py-2.5 border-none rounded-lg text-sm font-semibold cursor-pointer transition-all duration-150 whitespace-nowrap text-white bg-linear-to-r from-amber-500 to-orange-600 shadow-sm hover:-translate-y-px hover:shadow-md"
             onClick={handleAdd}

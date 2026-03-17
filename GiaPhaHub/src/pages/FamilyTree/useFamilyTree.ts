@@ -6,8 +6,10 @@ import type { FamilyMemberResponse } from "@/models/FamilyMember";
 interface FamilyTreeState {
   root: FamilyMemberResponse | null;
   members: FamilyMemberResponse[];
+  selectedRootId: number | null;
   loading: boolean;
   error: string | null;
+  setSelectedRootId: (id: number) => void;
   getMemberById: (id: number) => FamilyMemberResponse | undefined;
   getChildren: (member: FamilyMemberResponse) => FamilyMemberResponse[];
   getSpouse: (member: FamilyMemberResponse) => FamilyMemberResponse | undefined;
@@ -35,15 +37,31 @@ function normalizeMembersMap(
 export function useFamilyTree(): FamilyTreeState {
   const familyId = useFamilyId();
   const [root, setRoot] = useState<FamilyMemberResponse | null>(null);
+  const [selectedRootId, setSelectedRootIdState] = useState<number | null>(
+    null,
+  );
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const rootId = Number(familyId);
+    const routeRootId = Number(familyId);
 
-    if (!Number.isFinite(rootId) || rootId <= 0) {
+    if (!Number.isFinite(routeRootId) || routeRootId <= 0) {
+      setSelectedRootIdState(null);
       setRoot(null);
       setError("ID thành viên gốc không hợp lệ.");
+      setLoading(false);
+      return;
+    }
+
+    setSelectedRootIdState(routeRootId);
+  }, [familyId]);
+
+  useEffect(() => {
+    const rootId = selectedRootId;
+
+    if (!rootId || rootId <= 0) {
+      setRoot(null);
       setLoading(false);
       return;
     }
@@ -86,7 +104,7 @@ export function useFamilyTree(): FamilyTreeState {
     return () => {
       cancelled = true;
     };
-  }, [familyId]);
+  }, [selectedRootId]);
 
   const memberMap = useMemo(() => {
     if (!root) {
@@ -124,11 +142,21 @@ export function useFamilyTree(): FamilyTreeState {
 
   const getRootMembers = () => (root ? [root] : []);
 
+  const setSelectedRootId = (id: number) => {
+    if (!Number.isFinite(id) || id <= 0) {
+      return;
+    }
+
+    setSelectedRootIdState(id);
+  };
+
   return {
     root,
     members,
+    selectedRootId,
     loading,
     error,
+    setSelectedRootId,
     getMemberById,
     getChildren,
     getSpouse,

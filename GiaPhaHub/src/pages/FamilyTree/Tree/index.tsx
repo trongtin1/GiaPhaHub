@@ -3,11 +3,20 @@ import TreeNode from "@/pages/FamilyTree/Tree/components/TreeNode";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import ZoomControls from "@/components/common/ZoomControls";
 import { useFamilyTree } from "@/pages/FamilyTree/useFamilyTree";
+import { Select } from "antd";
 import "./css/tree.css";
 
 export default function FamilyTree() {
-  const { getRootMembers, getChildren, getSpouse, loading, error } =
-    useFamilyTree();
+  const {
+    members,
+    selectedRootId,
+    setSelectedRootId,
+    getRootMembers,
+    getChildren,
+    getSpouse,
+    loading,
+    error,
+  } = useFamilyTree();
   const rootMembers = getRootMembers();
   const {
     scale,
@@ -37,12 +46,27 @@ export default function FamilyTree() {
               Sơ đồ trực quan các mối quan hệ trong dòng họ
             </p>
           </div>
-          <ZoomControls
-            scale={scale}
-            onZoomIn={zoomIn}
-            onZoomOut={zoomOut}
-            onReset={reset}
-          />
+          <div className="flex items-center gap-3 flex-wrap">
+            <Select
+              value={selectedRootId ?? undefined}
+              onChange={setSelectedRootId}
+              placeholder="Chọn thành viên gốc"
+              style={{ minWidth: 240 }}
+              options={members.map((member) => ({
+                value: member.id,
+                label: `${member.name} (Đời ${member.generation})`,
+              }))}
+              showSearch
+              optionFilterProp="label"
+              loading={loading}
+            />
+            <ZoomControls
+              scale={scale}
+              onZoomIn={zoomIn}
+              onZoomOut={zoomOut}
+              onReset={reset}
+            />
+          </div>
         </div>
       </div>
 

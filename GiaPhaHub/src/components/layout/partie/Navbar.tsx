@@ -8,6 +8,7 @@ import {
   ApartmentOutlined,
   ClusterOutlined,
   AppstoreOutlined,
+  PictureOutlined,
 } from "@ant-design/icons";
 import { useFamilyId } from "@/hooks/useFamilyId";
 import { paths } from "@/router/paths";
@@ -51,6 +52,16 @@ const Navbar: React.FC = () => {
           label: "Lưới thế hệ",
         },
       ],
+    },
+    {
+      key: paths.events(familyId),
+      icon: <AppstoreOutlined />,
+      label: "Sự kiện",
+    },
+    {
+      key: paths.gallery(familyId),
+      icon: <PictureOutlined />,
+      label: "Thư viện ảnh",
     },
   ];
 
@@ -144,4 +155,3 @@ const Navbar: React.FC = () => {
 };
 
 export default Navbar;
-

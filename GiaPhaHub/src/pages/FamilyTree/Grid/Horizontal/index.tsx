@@ -43,12 +43,14 @@ export default function HorizontalFamilyTree() {
             </p>
           </div>
 
-          <ZoomControls
-            scale={scale}
-            onZoomIn={zoomIn}
-            onZoomOut={zoomOut}
-            onReset={reset}
-          />
+          <div className="flex items-center gap-3 flex-wrap">
+            <ZoomControls
+              scale={scale}
+              onZoomIn={zoomIn}
+              onZoomOut={zoomOut}
+              onReset={reset}
+            />
+          </div>
         </div>
       </div>
 

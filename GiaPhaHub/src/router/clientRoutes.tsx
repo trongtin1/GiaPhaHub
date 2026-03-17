@@ -14,6 +14,8 @@ const FamilyGrid = lazy(() => import("@/pages/FamilyTree/Grid"));
 const HorizontalFamilyTree = lazy(
   () => import("@/pages/FamilyTree/Grid/Horizontal"),
 );
+const EventsPage = lazy(() => import("@/pages/Event"));
+const PhotoLibraryPage = lazy(() => import("@/pages/Gallery"));
 const MemberDetail = lazy(() => import("@/pages/Member/MemberDetail"));
 export const clientRoutes: RouteObject[] = [
   { path: "/", element: <Homepage /> },
@@ -40,6 +42,11 @@ export const clientRoutes: RouteObject[] = [
           {
             path: "htree",
             element: <LazyComponent component={HorizontalFamilyTree} />,
+          },
+          { path: "events", element: <LazyComponent component={EventsPage} /> },
+          {
+            path: "gallery",
+            element: <LazyComponent component={PhotoLibraryPage} />,
           },
         ],
       },
