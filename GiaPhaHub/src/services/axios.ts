@@ -79,7 +79,7 @@ instance.interceptors.response.use(
           return instance(originalRequest);
         } catch (refreshError) {
           processQueue(refreshError);
-
+          store.dispatch(logout());
           return Promise.reject(refreshError);
         } finally {
           isRefreshing = false;
@@ -102,4 +102,3 @@ instance.interceptors.response.use(
 );
 
 export default instance;
-
