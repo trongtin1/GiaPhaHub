@@ -3,7 +3,13 @@ import TreeNode from "@/pages/FamilyTree/Tree/components/TreeNode";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import ZoomControls from "@/components/common/ZoomControls";
 import { useFamilyTree } from "@/pages/FamilyTree/useFamilyTree";
-import { Select } from "antd";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import "./css/tree.css";
 
 export default function FamilyTree() {
@@ -48,18 +54,20 @@ export default function FamilyTree() {
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <Select
-              value={selectedRootId ?? undefined}
-              onChange={setSelectedRootId}
-              placeholder="Chọn thành viên gốc"
-              style={{ minWidth: 240 }}
-              options={members.map((member) => ({
-                value: member.id,
-                label: `${member.name} (Đời ${member.generation})`,
-              }))}
-              showSearch
-              optionFilterProp="label"
-              loading={loading}
-            />
+              value={selectedRootId ? String(selectedRootId) : undefined}
+              onValueChange={(v) => setSelectedRootId(Number(v))}
+            >
+              <SelectTrigger className="min-w-60 h-9">
+                <SelectValue placeholder="Chọn thành viên gốc" />
+              </SelectTrigger>
+              <SelectContent>
+                {members.map((member) => (
+                  <SelectItem key={member.id} value={String(member.id)}>
+                    {member.name} (Đời {member.generation})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <ZoomControls
               scale={scale}
               onZoomIn={zoomIn}

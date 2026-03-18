@@ -1,5 +1,4 @@
-import { Spin } from "antd";
-import { LoadingOutlined } from "@ant-design/icons";
+import { Loader2 } from "lucide-react";
 
 interface LoadingProps {
   tip?: string;
@@ -7,22 +6,25 @@ interface LoadingProps {
   fullScreen?: boolean;
 }
 
+const sizeMap = {
+  small: "size-6",
+  default: "size-8",
+  large: "size-12",
+};
+
 const Loading: React.FC<LoadingProps> = ({
   tip = "Đang tải...",
   size = "large",
   fullScreen = false,
 }) => {
-  const indicator = (
-    <LoadingOutlined style={{ fontSize: size === "large" ? 48 : 24 }} spin />
-  );
-
   return (
     <div
-      className={`flex justify-center items-center w-full ${fullScreen ? "min-h-screen" : "py-12"}`}
+      className={`flex flex-col items-center justify-center gap-3 w-full ${fullScreen ? "min-h-screen" : "py-12"}`}
     >
-      <Spin indicator={indicator} tip={tip} size={size}>
-        <div className="p-12" />
-      </Spin>
+      <Loader2
+        className={`${sizeMap[size]} animate-spin text-amber-500`}
+      />
+      {tip && <p className="text-sm text-gray-400">{tip}</p>}
     </div>
   );
 };

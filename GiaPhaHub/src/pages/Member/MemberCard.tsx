@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { User, Calendar, MapPin, Heart } from "lucide-react";
 import type { FamilyMemberResponse } from "@/models/FamilyMember";
 import { useFamily } from "@/context/useFamily";
+import { useFamilyId } from "@/hooks/useFamilyId";
+import { paths } from "@/router/paths";
 
 interface MemberCardProps {
   member: FamilyMemberResponse;
@@ -10,6 +12,7 @@ interface MemberCardProps {
 
 export default function MemberCard({ member, compact }: MemberCardProps) {
   const navigate = useNavigate();
+  const familyId = useFamilyId();
   const { getSpouse } = useFamily();
   const spouse = getSpouse(member.id);
 
@@ -34,7 +37,7 @@ export default function MemberCard({ member, compact }: MemberCardProps) {
   return (
     <div
       className={`flex items-center gap-3 ${compact ? "p-2 px-3" : "p-3 px-3.5"} rounded-xl cursor-pointer transition-all duration-250 bg-gray-50 border border-gray-100 hover:translate-x-0.5 hover:bg-white hover:border-gray-200 hover:shadow-sm ${member.deathDate ? "opacity-65" : ""}`}
-      onClick={() => navigate(`/member/${member.id}`)}
+      onClick={() => navigate(paths.member(familyId, member.id))}
     >
       <div
         className={`${compact ? "w-8 h-8" : "w-10 h-10"} rounded-full flex items-center justify-center shrink-0 ${avatarColor}`}

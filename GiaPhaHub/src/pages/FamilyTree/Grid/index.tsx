@@ -1,13 +1,24 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, LayoutGrid, AlignLeft } from "lucide-react";
 import { useZoomPan } from "@/hooks/useZoomPan";
 import ZoomControls from "@/components/common/ZoomControls";
-import { Input, Select, Modal, Segmented } from "antd";
+import { Input } from "@/components/ui/input";
 import {
-  ExclamationCircleFilled,
-  AppstoreOutlined,
-  AlignLeftOutlined,
-} from "@ant-design/icons";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { useFamily } from "@/context/useFamily";
 import MemberForm from "@/components/MemberForm";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
@@ -42,6 +53,7 @@ export default function FamilyGrid() {
   const [editMember, setEditMember] = useState<FamilyMemberResponse | null>(
     null,
   );
+  const [deleteConfirm, setDeleteConfirm] = useState<FamilyMemberResponse | null>(null);
 
   const {
     scale,
@@ -81,25 +93,24 @@ export default function FamilyGrid() {
   };
 
   const handleDelete = (member: FamilyMemberResponse) => {
-    Modal.confirm({
-      title: "Xóa thành viên",
-      icon: <ExclamationCircleFilled />,
-      content: (
-        <>
-          Bạn có chắc muốn xóa <strong>{member.name}</strong> khỏi gia phả? Hành
-          động này không thể hoàn tác.
-        </>
-      ),
-      okText: "Xóa",
-      okType: "danger",
-      cancelText: "Hủy",
-      onOk() {
-        deleteMember(member.id);
-      },
-    });
+    setDeleteConfirm(member);
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirm) {
+      deleteMember(deleteConfirm.id);
+      setDeleteConfirm(null);
+    }
   };
 
   const treeRootMembers = getTreeRootMembers();
+
+  const segmentBtnCls = (active: boolean) =>
+    `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer border-none ${
+      active
+        ? "bg-amber-100 text-amber-700 shadow-sm"
+        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+    }`;
 
   return (
     <div className="max-w-300 mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-[fadeIn_0.4s_ease]">
@@ -120,33 +131,42 @@ export default function FamilyGrid() {
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <Segmented
-            value={viewMode}
-            onChange={(v) => setViewMode(v as "grid" | "htree")}
-            options={[
-              { value: "grid", label: "Lưới dọc", icon: <AppstoreOutlined /> },
-              {
-                value: "htree",
-                label: "Sơ đồ ngang",
-                icon: <AlignLeftOutlined />,
-              },
-            ]}
-          />
+          {/* Segmented control */}
+          <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-gray-100">
+            <button
+              className={segmentBtnCls(viewMode === "grid")}
+              onClick={() => setViewMode("grid")}
+            >
+              <LayoutGrid size={14} />
+              Lưới dọc
+            </button>
+            <button
+              className={segmentBtnCls(viewMode === "htree")}
+              onClick={() => setViewMode("htree")}
+            >
+              <AlignLeft size={14} />
+              Sơ đồ ngang
+            </button>
+          </div>
+
           {viewMode === "htree" && (
             <Select
-              value={selectedRootId ?? undefined}
-              onChange={setSelectedRootId}
-              placeholder="Chọn thành viên gốc"
-              style={{ minWidth: 240 }}
-              options={treeMembers.map((member) => ({
-                value: member.id,
-                label: `${member.name} (Đời ${member.generation})`,
-              }))}
-              showSearch
-              optionFilterProp="label"
-              loading={treeLoading}
-            />
+              value={selectedRootId ? String(selectedRootId) : undefined}
+              onValueChange={(v) => setSelectedRootId(Number(v))}
+            >
+              <SelectTrigger className="min-w-60 h-9">
+                <SelectValue placeholder="Chọn thành viên gốc" />
+              </SelectTrigger>
+              <SelectContent>
+                {treeMembers.map((member) => (
+                  <SelectItem key={member.id} value={String(member.id)}>
+                    {member.name} (Đời {member.generation})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
+
           <button
             className="inline-flex items-center gap-2 px-5 py-2.5 border-none rounded-lg text-sm font-semibold cursor-pointer transition-all duration-150 whitespace-nowrap text-white bg-linear-to-r from-amber-500 to-orange-600 shadow-sm hover:-translate-y-px hover:shadow-md"
             onClick={handleAdd}
@@ -159,49 +179,58 @@ export default function FamilyGrid() {
       {/* Filters — only for grid mode */}
       {viewMode === "grid" && (
         <div className="flex gap-3 mb-5 flex-wrap max-md:flex-col">
-          <Input.Search
+          <Input
             placeholder="Tìm kiếm theo tên..."
-            allowClear
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            onSearch={(v) => setSearch(v)}
-            className="flex-1 min-w-50"
+            className="flex-1 min-w-50 h-9"
           />
           <Select
-            value={filterGender || undefined}
-            onChange={(v) => setFilterGender(v ?? "")}
-            placeholder="Tất cả giới tính"
-            allowClear
-            style={{ minWidth: 160 }}
-            options={[
-              { value: "male", label: "Nam" },
-              { value: "female", label: "Nữ" },
-            ]}
-          />
+            value={filterGender || "all"}
+            onValueChange={(v) => setFilterGender(v === "all" ? "" : v)}
+          >
+            <SelectTrigger className="min-w-40 h-9">
+              <SelectValue placeholder="Tất cả giới tính" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả giới tính</SelectItem>
+              <SelectItem value="male">Nam</SelectItem>
+              <SelectItem value="female">Nữ</SelectItem>
+            </SelectContent>
+          </Select>
           <Select
-            value={filterGen || undefined}
-            onChange={(v) => setFilterGen(v ?? "")}
-            placeholder="Tất cả thế hệ"
-            allowClear
-            style={{ minWidth: 160 }}
-            options={generations.map((g) => ({
-              value: String(g),
-              label: `Đời ${g}`,
-            }))}
-          />
+            value={filterGen || "all"}
+            onValueChange={(v) => setFilterGen(v === "all" ? "" : v)}
+          >
+            <SelectTrigger className="min-w-40 h-9">
+              <SelectValue placeholder="Tất cả thế hệ" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả thế hệ</SelectItem>
+              {generations.map((g) => (
+                <SelectItem key={g} value={String(g)}>
+                  Đời {g}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select
-            value={filterStatus || undefined}
-            onChange={(v) =>
-              setFilterStatus((v ?? "") as "alive" | "deceased" | "")
+            value={filterStatus || "all"}
+            onValueChange={(v) =>
+              setFilterStatus(
+                v === "all" ? "" : (v as "alive" | "deceased"),
+              )
             }
-            placeholder="Tất cả tình trạng"
-            allowClear
-            style={{ minWidth: 170 }}
-            options={[
-              { value: "alive", label: "Còn sống" },
-              { value: "deceased", label: "Đã mất" },
-            ]}
-          />
+          >
+            <SelectTrigger className="min-w-42 h-9">
+              <SelectValue placeholder="Tất cả tình trạng" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả tình trạng</SelectItem>
+              <SelectItem value="alive">Còn sống</SelectItem>
+              <SelectItem value="deceased">Đã mất</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       )}
 
@@ -280,6 +309,26 @@ export default function FamilyGrid() {
         }}
         editMember={editMember}
       />
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={!!deleteConfirm} onOpenChange={(v) => !v && setDeleteConfirm(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Xóa thành viên</DialogTitle>
+            <DialogDescription>
+              Bạn có chắc muốn xóa <strong>{deleteConfirm?.name}</strong> khỏi gia phả? Hành động này không thể hoàn tác.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
+              Hủy
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              Xóa
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -11,6 +11,8 @@ export const paths = {
   htree: (familyId = DEFAULT_FAMILY_ID) => `/family-tree/${familyId}/htree`,
   events: (familyId = DEFAULT_FAMILY_ID) => `/family-tree/${familyId}/events`,
   gallery: (familyId = DEFAULT_FAMILY_ID) => `/family-tree/${familyId}/gallery`,
+  dnaPrediction: (familyId = DEFAULT_FAMILY_ID) =>
+    `/family-tree/${familyId}/dna-prediction`,
   members: (familyId = DEFAULT_FAMILY_ID) => `/family-tree/${familyId}/members`,
   member: (familyId = DEFAULT_FAMILY_ID, memberId: number | string) =>
     `/family-tree/${familyId}/members/${memberId}`,

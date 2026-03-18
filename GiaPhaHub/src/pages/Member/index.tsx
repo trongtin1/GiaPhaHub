@@ -1,17 +1,47 @@
-import { useState } from "react";
-import { Plus, Pencil, Trash2, Eye } from "lucide-react";
+import { useState, useMemo } from "react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Eye,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  CalendarDays,
+  MapPin,
+  Phone,
+  Users,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Modal, Input, Select, Table, Tooltip, Button, Tag } from "antd";
-import type { TableColumnsType } from "antd";
-import { ExclamationCircleFilled } from "@ant-design/icons";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useFamily } from "@/context/useFamily";
 import MemberForm from "@/components/MemberForm";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
-
 import { useFamilyId } from "@/hooks/useFamilyId";
 import { paths } from "@/router/paths";
-import dayjs from "dayjs";
 import { FamilyMemberResponse } from "@/models/FamilyMember";
+import dayjs from "dayjs";
+
+const PAGE_SIZE = 15;
 
 export default function Members() {
   const { members, deleteMember } = useFamily();
@@ -24,15 +54,25 @@ export default function Members() {
   const [editMember, setEditMember] = useState<FamilyMemberResponse | null>(
     null,
   );
+  const [deleteConfirm, setDeleteConfirm] =
+    useState<FamilyMemberResponse | null>(null);
+  const [page, setPage] = useState(1);
 
   const generations = [...new Set(members.map((m) => m.generation))].sort();
 
-  const filtered = members.filter((m) => {
-    const matchSearch = m.name.toLowerCase().includes(search.toLowerCase());
-    const matchGender = !filterGender || m.gender === filterGender;
-    const matchGen = !filterGen || m.generation === Number(filterGen);
-    return matchSearch && matchGender && matchGen;
-  });
+  const filtered = useMemo(
+    () =>
+      members.filter((m) => {
+        const matchSearch = m.name.toLowerCase().includes(search.toLowerCase());
+        const matchGender = !filterGender || m.gender === filterGender;
+        const matchGen = !filterGen || m.generation === Number(filterGen);
+        return matchSearch && matchGender && matchGen;
+      }),
+    [members, search, filterGender, filterGen],
+  );
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const handleEdit = (member: FamilyMemberResponse) => {
     setEditMember(member);
@@ -42,115 +82,20 @@ export default function Members() {
     setEditMember(null);
     setFormOpen(true);
   };
-  const columns: TableColumnsType<FamilyMemberResponse> = [
-    {
-      title: "Họ và tên",
-      dataIndex: "name",
-      key: "name",
-      render: (_, m) => (
-        <div className="flex items-center gap-2.5 font-medium text-gray-900">
-          <span
-            className={`w-2 h-2 rounded-full shrink-0 ${m.gender === "male" ? "bg-blue-500" : "bg-pink-500"}`}
-          />
-          {m.name}
-          {m.deathDate && (
-            <Tag color="red" className="ml-1" style={{ fontSize: 11 }}>
-              Đã mất
-            </Tag>
-          )}
-        </div>
-      ),
-    },
-    {
-      title: "Giới tính",
-      dataIndex: "gender",
-      key: "gender",
-      width: 100,
-      render: (g: string) => (
-        <span className="text-gray-500">{g === "male" ? "Nam" : "Nữ"}</span>
-      ),
-    },
-    {
-      title: "Ngày sinh",
-      dataIndex: "birthDate",
-      key: "birthDate",
-      width: 130,
-      render: (d: string) => (
-        <span className="text-gray-500">
-          {d ? dayjs(d).format("DD/MM/YYYY") : "—"}
-        </span>
-      ),
-    },
-    {
-      title: "Thế hệ",
-      dataIndex: "generation",
-      key: "generation",
-      width: 100,
-      render: (g: number) => <Tag color="gold">Đời {g}</Tag>,
-    },
-    {
-      title: "Địa chỉ",
-      dataIndex: "address",
-      key: "address",
-      render: (a: string) => <span className="text-gray-500">{a || "—"}</span>,
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      width: 120,
-      render: (_, m) => (
-        <div className="flex gap-1">
-          <Tooltip title="Xem chi tiết">
-            <Button
-              type="text"
-              size="small"
-              icon={<Eye size={15} />}
-              onClick={() => navigate(paths.member(familyId, m.id))}
-            />
-          </Tooltip>
-          <Tooltip title="Chỉnh sửa">
-            <Button
-              type="text"
-              size="small"
-              icon={<Pencil size={15} />}
-              onClick={() => handleEdit(m)}
-            />
-          </Tooltip>
-          <Tooltip title="Xóa">
-            <Button
-              type="text"
-              size="small"
-              danger
-              icon={<Trash2 size={15} />}
-              onClick={() => handleDelete(m)}
-            />
-          </Tooltip>
-        </div>
-      ),
-    },
-  ];
-
   const handleDelete = (member: FamilyMemberResponse) => {
-    Modal.confirm({
-      title: "Xóa thành viên",
-      icon: <ExclamationCircleFilled />,
-      content: (
-        <>
-          Bạn có chắc muốn xóa <strong>{member.name}</strong> khỏi gia phả? Hành
-          động này không thể hoàn tác.
-        </>
-      ),
-      okText: "Xóa",
-      okType: "danger",
-      cancelText: "Hủy",
-      onOk() {
-        deleteMember(member.id);
-      },
-    });
+    setDeleteConfirm(member);
+  };
+  const confirmDelete = () => {
+    if (deleteConfirm) {
+      deleteMember(deleteConfirm.id);
+      setDeleteConfirm(null);
+    }
   };
 
+  const hasFilters = search.trim().length > 0 || !!filterGender || !!filterGen;
+
   return (
-    <div className="max-w-300 mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-[fadeIn_0.4s_ease]">
+    <div className="mx-auto max-w-7xl animate-[fadeIn_0.4s_ease] px-4 py-7 sm:px-6 sm:py-8 lg:px-8">
       <PageBreadcrumb
         items={[
           { title: "Trang chủ", link: paths.home },
@@ -158,66 +103,275 @@ export default function Members() {
         ]}
       />
 
-      <div className="flex items-center justify-between mb-7 flex-wrap gap-4 max-md:flex-col max-md:items-stretch">
-        <div>
-          <h1 className="text-[1.75rem] font-bold bg-linear-to-r from-amber-600 via-orange-500 to-rose-500 bg-clip-text text-transparent">
-            Thành Viên Gia Phả
-          </h1>
-          <p className="text-sm mt-0.5 text-gray-500">
-            {members.length} thành viên trong gia phả
-          </p>
+      <Card className="mb-6 overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_14px_40px_rgba(15,23,42,0.08)]">
+        <div className="h-28 bg-[radial-gradient(circle_at_15%_20%,rgba(251,191,36,0.36),transparent_40%),radial-gradient(circle_at_80%_10%,rgba(249,115,22,0.2),transparent_45%),linear-gradient(120deg,#fff7ed,#fffbeb)]" />
+        <CardContent className="p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-5">
+            <div>
+              <h1 className="text-[1.65rem] font-bold leading-tight text-slate-900 sm:text-[1.95rem]">
+                Family Members Feed
+              </h1>
+              <p className="mt-1 max-w-3xl text-sm text-slate-600 sm:text-base">
+                Danh sách thành viên theo dạng card hiện đại, dễ theo dõi thông
+                tin và thao tác nhanh như một bảng tin.
+              </p>
+              <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5">
+                <span className="text-xs text-amber-700 sm:text-sm">
+                  {filtered.length} thành viên đang hiển thị
+                </span>
+              </div>
+            </div>
+            <Button
+              className="h-10 rounded-xl bg-linear-to-r from-amber-500 to-orange-600 px-5 text-sm font-semibold text-white shadow-sm hover:-translate-y-px"
+              onClick={handleAdd}
+            >
+              <Plus size={16} /> Thêm thành viên
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-5 rounded-3xl border border-slate-200/80 bg-white shadow-sm">
+        <CardContent className="p-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative w-full sm:min-w-72 sm:flex-1">
+              <Search
+                size={16}
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+              <Input
+                placeholder="Tìm theo tên thành viên..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="h-9 border-slate-200 pl-8"
+              />
+            </div>
+
+            <Select
+              value={filterGender || "all"}
+              onValueChange={(v) => {
+                setFilterGender(v === "all" ? "" : v);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="h-9 w-full border-slate-200 sm:w-44">
+                <SelectValue placeholder="Tất cả giới tính" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả giới tính</SelectItem>
+                <SelectItem value="male">Nam</SelectItem>
+                <SelectItem value="female">Nữ</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={filterGen || "all"}
+              onValueChange={(v) => {
+                setFilterGen(v === "all" ? "" : v);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="h-9 w-full border-slate-200 sm:w-44">
+                <SelectValue placeholder="Tất cả thế hệ" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả thế hệ</SelectItem>
+                {generations.map((g) => (
+                  <SelectItem key={g} value={String(g)}>
+                    Đời {g}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {hasFilters && (
+              <Badge
+                variant="outline"
+                className="rounded-full border-slate-300 bg-slate-100 text-slate-700"
+              >
+                Đang lọc
+              </Badge>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {paged.length === 0 ? (
+        <Card className="rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <CardContent className="py-20 text-center text-slate-400">
+            Không tìm thấy thành viên phù hợp
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {paged.map((member) => {
+            const isMale = member.gender === "male";
+            const age = member.birthDate
+              ? (() => {
+                  const endDate = member.deathDate
+                    ? new Date(member.deathDate)
+                    : new Date();
+                  const birth = new Date(member.birthDate);
+                  return Math.floor(
+                    (endDate.getTime() - birth.getTime()) /
+                      (365.25 * 24 * 60 * 60 * 1000),
+                  );
+                })()
+              : null;
+
+            return (
+              <Card
+                key={member.id}
+                className={`overflow-hidden rounded-3xl border bg-white shadow-[0_10px_30px_rgba(15,23,42,0.07)] transition-transform duration-200 hover:-translate-y-0.5 ${member.deathDate ? "border-slate-300/80 opacity-85" : "border-slate-200/90"}`}
+              >
+                <CardContent className="p-4 sm:p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <Avatar className="size-12 border border-slate-200">
+                        {member.avatar && (
+                          <AvatarImage src={member.avatar} alt={member.name} />
+                        )}
+                        <AvatarFallback>
+                          {member.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="truncate text-base font-semibold text-slate-900">
+                          {member.name}
+                        </p>
+                        <p className="mt-0.5 text-xs text-slate-500">
+                          Hồ sơ thành viên gia đình
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-end gap-1.5">
+                      <Badge
+                        variant="outline"
+                        className={`rounded-full ${isMale ? "border-sky-200 bg-sky-50 text-sky-700" : "border-rose-200 bg-rose-50 text-rose-700"}`}
+                      >
+                        {isMale ? "Nam" : "Nữ"}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="rounded-full border-amber-200 bg-amber-50 text-amber-700"
+                      >
+                        Đời {member.generation}
+                      </Badge>
+                      {member.deathDate && (
+                        <Badge className="rounded-full bg-slate-600 text-white">
+                          Đã mất
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-600">
+                    <span className="inline-flex items-center gap-1.5">
+                      <CalendarDays size={15} className="text-slate-500" />
+                      {member.birthDate
+                        ? dayjs(member.birthDate).format("DD/MM/YYYY")
+                        : "Chưa có ngày sinh"}
+                      {age !== null && ` • ${age} tuổi`}
+                    </span>
+                    {member.address && (
+                      <span className="inline-flex items-center gap-1.5">
+                        <MapPin size={15} className="text-slate-500" />
+                        {member.address}
+                      </span>
+                    )}
+                    {member.phone && (
+                      <span className="inline-flex items-center gap-1.5">
+                        <Phone size={15} className="text-slate-500" />
+                        {member.phone}
+                      </span>
+                    )}
+                  </div>
+
+                  {member.bio && (
+                    <p className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm leading-relaxed text-slate-700 line-clamp-2">
+                      {member.bio}
+                    </p>
+                  )}
+
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
+                    <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+                      <Users size={13} />
+                      Mã thành viên #{member.id}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          navigate(paths.member(familyId, member.id))
+                        }
+                      >
+                        <Eye size={14} /> Xem
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(member)}
+                      >
+                        <Pencil size={14} /> Sửa
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => handleDelete(member)}
+                      >
+                        <Trash2 size={14} /> Xóa
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
-        <button
-          className="inline-flex items-center gap-2 px-5 py-2.5 border-none rounded-lg text-sm font-semibold cursor-pointer transition-all duration-150 whitespace-nowrap text-white bg-linear-to-r from-amber-500 to-orange-600 shadow-sm hover:-translate-y-px hover:shadow-md"
-          onClick={handleAdd}
-        >
-          <Plus size={18} /> Thêm thành viên
-        </button>
-      </div>
+      )}
 
-      <div className="flex gap-3 mb-5 flex-wrap max-md:flex-col">
-        <Input.Search
-          placeholder="Tìm kiếm theo tên..."
-          allowClear
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onSearch={(v) => setSearch(v)}
-          className="flex-1 min-w-50"
-        />
-        <Select
-          value={filterGender || undefined}
-          onChange={(v) => setFilterGender(v ?? "")}
-          placeholder="Tất cả giới tính"
-          allowClear
-          style={{ minWidth: 160 }}
-          options={[
-            { value: "male", label: "Nam" },
-            { value: "female", label: "Nữ" },
-          ]}
-        />
-        <Select
-          value={filterGen || undefined}
-          onChange={(v) => setFilterGen(v ?? "")}
-          placeholder="Tất cả thế hệ"
-          allowClear
-          style={{ minWidth: 160 }}
-          options={generations.map((g) => ({
-            value: String(g),
-            label: `Đời ${g}`,
-          }))}
-        />
-      </div>
-
-      <Table
-        columns={columns}
-        dataSource={filtered}
-        rowKey="id"
-        size="middle"
-        expandable={{ childrenColumnName: "nestedMembers" }}
-        pagination={{ pageSize: 15, showSizeChanger: false }}
-        rowClassName={(m) => (m.deathDate ? "opacity-60" : "")}
-        locale={{ emptyText: "Không tìm thấy thành viên nào" }}
-      />
+      {totalPages > 1 && (
+        <div className="mt-5 flex items-center justify-between">
+          <p className="text-xs text-slate-500">
+            Hiển thị {(page - 1) * PAGE_SIZE + 1}–
+            {Math.min(page * PAGE_SIZE, filtered.length)} / {filtered.length}
+          </p>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon-sm"
+              disabled={page === 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              <ChevronLeft size={14} />
+            </Button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <Button
+                key={p}
+                variant={p === page ? "default" : "outline"}
+                size="sm"
+                onClick={() => setPage(p)}
+                className="min-w-8"
+              >
+                {p}
+              </Button>
+            ))}
+            <Button
+              variant="outline"
+              size="icon-sm"
+              disabled={page === totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              <ChevronRight size={14} />
+            </Button>
+          </div>
+        </div>
+      )}
 
       <MemberForm
         open={formOpen}
@@ -227,6 +381,29 @@ export default function Members() {
         }}
         editMember={editMember}
       />
+
+      <Dialog
+        open={!!deleteConfirm}
+        onOpenChange={(v) => !v && setDeleteConfirm(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Xóa thành viên</DialogTitle>
+            <DialogDescription>
+              Bạn có chắc muốn xóa <strong>{deleteConfirm?.name}</strong> khỏi
+              gia phả? Hành động này không thể hoàn tác.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
+              Hủy
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              Xóa
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
