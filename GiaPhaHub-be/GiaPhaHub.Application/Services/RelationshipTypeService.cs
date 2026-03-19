@@ -50,7 +50,7 @@ public class RelationshipTypeService : BaseService, IRelationshipTypeService
         return Success(response);
     }
 
-    public async Task<Result<RelationshipTypeResponse>> Create(CreateRelationshipTypeRequest request)
+    public async Task<Result<RelationshipTypeResponse>> Create(RelationshipTypeRequest request)
     {
         var repo = _unitOfWork.IRelationshipTypeRepository;
         var type = _mapper.Map<RelationshipType>(request);
@@ -62,7 +62,7 @@ public class RelationshipTypeService : BaseService, IRelationshipTypeService
         return Created(response);
     }
 
-    public async Task<Result<RelationshipTypeResponse>> Update(int id, UpdateRelationshipTypeRequest request)
+    public async Task<Result<RelationshipTypeResponse>> Update(int id, RelationshipTypeRequest request)
     {
         var repo = _unitOfWork.IRelationshipTypeRepository;
         var type = await repo.FindSingle(t => t.Id == id);

@@ -46,11 +46,17 @@ public class FamilyMemberResponse
 
     public IDictionary<int, FamilyMemberResponse> Members { get; set; } =
       new Dictionary<int, FamilyMemberResponse>();
-    public ICollection<MemberRelationshipDto> Relationships { get; set; } = new List<MemberRelationshipDto>();
+    public ICollection<RelationshipResponse> FromRelationships { get; set; } = new List<RelationshipResponse>();
+
+    public ICollection<RelationshipResponse> ToRelationships { get; set; } = new List<RelationshipResponse>();
 }
 public class MemberRelationshipDto
 {
-    public int MemberId { get; set; }
-    public string MemberName { get; set; } = string.Empty;
+    public int FromMemberId { get; set; }
+    public string FromMemberName { get; set; } = string.Empty;
+
+    public int ToMemberId { get; set; }
+    public string ToMemberName { get; set; } = string.Empty;
+
     public string Relationship { get; set; } = string.Empty;
 }

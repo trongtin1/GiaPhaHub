@@ -19,31 +19,21 @@ public class FamilyMemberRepository : GenericRepository<FamilyMember>, IFamilyMe
     public async Task<List<MemberRelationshipDto>> GetMemberRelationships(int memberId)
     {
         FormattableString sql = $@"
-            SELECT
-                r.ToMemberId AS MemberId,
-                m.Name AS MemberName,
-                rt.Name AS Relationship
-            FROM Relationships r
-            INNER JOIN RelationshipTypes rt ON rt.Id = r.RelationshipTypeId
-            INNER JOIN FamilyMembers m ON m.Id = r.ToMemberId
-            WHERE r.FromMemberId = {memberId}
-            AND r.IsDelete = 0
-            AND m.IsDelete = 0
-
-            UNION ALL
-
-            SELECT
-                r.FromMemberId AS MemberId,
-                m.Name AS MemberName,
-                rt.Name AS Relationship
-            FROM Relationships r
-            INNER JOIN RelationshipTypes rt ON rt.Id = r.RelationshipTypeId
-            INNER JOIN FamilyMembers m ON m.Id = r.FromMemberId
-            WHERE r.ToMemberId = {memberId}
-            AND r.IsDelete = 0
-            AND m.IsDelete = 0
-
-            ORDER BY MemberName";
+                    SELECT
+                        r.FromMemberId,
+                        fm.Name AS FromMemberName,
+                        r.ToMemberId,
+                        tm.Name AS ToMemberName,
+                        rt.Name AS Relationship
+                    FROM Relationships r
+                    INNER JOIN RelationshipTypes rt ON rt.Id = r.RelationshipTypeId
+                    INNER JOIN FamilyMembers fm ON fm.Id = r.FromMemberId
+                    INNER JOIN FamilyMembers tm ON tm.Id = r.ToMemberId
+                    WHERE (r.FromMemberId = {memberId} OR r.ToMemberId = {memberId})
+                    AND r.IsDelete = 0
+                    AND fm.IsDelete = 0
+                    AND tm.IsDelete = 0
+                    ORDER BY ToMemberName";
 
         return await _context.Database
             .SqlQuery<MemberRelationshipDto>(sql)

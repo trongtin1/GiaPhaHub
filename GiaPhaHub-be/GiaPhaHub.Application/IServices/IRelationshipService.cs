@@ -9,7 +9,8 @@ public interface IRelationshipService
     Task<Result<PageList<RelationshipResponse>>> GetAll(QueryResource queryResource);
     Task<Result<RelationshipResponse>> GetById(int id);
     Task<Result<List<RelationshipResponse>>> GetByMemberId(int memberId);
-    Task<Result<RelationshipResponse>> Create(CreateRelationshipRequest request);
-    Task<Result<RelationshipResponse>> Update(int id, UpdateRelationshipRequest request);
+    Task<Result<KinshipInferenceResponse>> InferKinship(KinshipInferenceRequest request);
+    Task<Result<RelationshipResponse>> Create(RelationshipRequest request);
+    Task<Result<RelationshipResponse>> Update(int id, RelationshipRequest request);
     Task<Result<bool>> Delete(int id);
 }

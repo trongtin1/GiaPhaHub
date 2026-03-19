@@ -8,7 +8,7 @@ public interface IRelationshipTypeService
 {
     Task<Result<PageList<RelationshipTypeResponse>>> GetAll(QueryResource queryResource);
     Task<Result<RelationshipTypeResponse>> GetById(int id);
-    Task<Result<RelationshipTypeResponse>> Create(CreateRelationshipTypeRequest request);
-    Task<Result<RelationshipTypeResponse>> Update(int id, UpdateRelationshipTypeRequest request);
+    Task<Result<RelationshipTypeResponse>> Create(RelationshipTypeRequest request);
+    Task<Result<RelationshipTypeResponse>> Update(int id, RelationshipTypeRequest request);
     Task<Result<bool>> Delete(int id);
 }

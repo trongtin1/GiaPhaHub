@@ -17,6 +17,7 @@ const HorizontalFamilyTree = lazy(
 const EventsPage = lazy(() => import("@/pages/Event"));
 const PhotoLibraryPage = lazy(() => import("@/pages/Gallery"));
 const MemberDetail = lazy(() => import("@/pages/Member/MemberDetail"));
+const DnaPredictionPage = lazy(() => import("@/pages/DnaPrediction"));
 export const clientRoutes: RouteObject[] = [
   { path: "/", element: <Homepage /> },
   { path: "/login", element: <LazyComponent component={LoginPage} /> },
@@ -44,6 +45,10 @@ export const clientRoutes: RouteObject[] = [
             element: <LazyComponent component={HorizontalFamilyTree} />,
           },
           { path: "events", element: <LazyComponent component={EventsPage} /> },
+          {
+            path: "dna-prediction",
+            element: <LazyComponent component={DnaPredictionPage} />,
+          },
           {
             path: "gallery",
             element: <LazyComponent component={PhotoLibraryPage} />,

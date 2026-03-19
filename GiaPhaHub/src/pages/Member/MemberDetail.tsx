@@ -10,22 +10,46 @@ import {
   Users,
   FileText,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFamily } from "@/context/useFamily";
 import MemberForm from "@/components/MemberForm";
 import MemberCard from "@/pages/Member/MemberCard";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import { useFamilyId } from "@/hooks/useFamilyId";
 import { paths } from "@/router/paths";
+import { useAppDispatch } from "@/features";
+import { fetchDetailMember } from "@/features/slices/family/thunks";
 import dayjs from "dayjs";
+import {
+  getChildrenRefsFromMember,
+  mergeMemberRefs,
+  type MemberRef,
+} from "@/utils/relationshipUtils";
 export default function MemberDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const familyId = useFamilyId();
-  const { getMember, getChildren, getSpouse, getParent } = useFamily();
+  const { getMember, getChildren, getSpouse, getParent, loading } = useFamily();
   const [editOpen, setEditOpen] = useState(false);
   const memberId = Number(id);
   const member = getMember(memberId);
+
+  useEffect(() => {
+    if (Number.isFinite(memberId) && memberId > 0) {
+      dispatch(fetchDetailMember(memberId));
+    }
+  }, [dispatch, memberId]);
+
+  if (!member && loading) {
+    return (
+      <div className="max-w-300 mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5">
+          <h2 className="text-gray-500">Đang tải thông tin thành viên...</h2>
+        </div>
+      </div>
+    );
+  }
 
   if (!member) {
     return (
@@ -47,10 +71,25 @@ export default function MemberDetail() {
   const spouse = getSpouse(member.id);
   const children = getChildren(member.id);
   const spouseChildren = spouse ? getChildren(spouse.id) : [];
-  const allChildren = [
+  const allChildrenFromStore: MemberRef[] = [
     ...children,
     ...spouseChildren.filter((sc) => !children.find((c) => c.id === sc.id)),
   ];
+
+  const allChildrenRefs = mergeMemberRefs(
+    allChildrenFromStore,
+    getChildrenRefsFromMember(member, (childId) => getMember(childId)?.name),
+    getChildrenRefsFromMember(spouse, (childId) => getMember(childId)?.name),
+  );
+
+  const allChildren = allChildrenRefs.map((childRef) => {
+    const found = getMember(childRef.id);
+    if (found) {
+      return { type: "full" as const, member: found };
+    }
+
+    return { type: "basic" as const, member: childRef };
+  });
 
   const age = member.birthDate
     ? (() => {
@@ -215,9 +254,23 @@ export default function MemberDetail() {
                   <Users size={14} /> Con cái ({allChildren.length})
                 </label>
                 <div className="flex flex-col gap-1.5">
-                  {allChildren.map((child) => (
-                    <MemberCard key={child.id} member={child} compact />
-                  ))}
+                  {allChildren.map((child) =>
+                    child.type === "full" ? (
+                      <MemberCard
+                        key={child.member.id}
+                        member={child.member}
+                        compact
+                      />
+                    ) : (
+                      <Link
+                        key={child.member.id}
+                        to={paths.member(familyId, child.member.id)}
+                        className="inline-flex items-center gap-2 py-2.5 px-4 rounded-lg font-medium text-sm no-underline transition-all duration-150 bg-gray-50 border border-gray-200 text-gray-800 hover:border-amber-400 hover:text-amber-600"
+                      >
+                        <Users size={14} /> {child.member.name}
+                      </Link>
+                    ),
+                  )}
                 </div>
               </div>
             )}

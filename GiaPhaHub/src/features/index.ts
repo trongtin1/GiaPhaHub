@@ -16,11 +16,13 @@ import type { TypedUseSelectorHook } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
 import familyReducer from "./slices/family/slice";
 import authReducer from "./slices/auth/slice";
+import relationshipReducer from "./slices/relationship/slice";
 
 export const store = configureStore({
   reducer: {
     family: familyReducer,
     auth: authReducer,
+    relationship: relationshipReducer,
     // settings: settingsReducer,
   },
 });

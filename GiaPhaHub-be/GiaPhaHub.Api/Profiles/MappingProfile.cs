@@ -14,8 +14,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.MotherId, opt => opt.Ignore())
             .ForMember(dest => dest.Spouses, opt => opt.Ignore())
             .ForMember(dest => dest.Children, opt => opt.Ignore())
-            .ForMember(dest => dest.Members, opt => opt.Ignore())
-            .ForMember(dest => dest.Relationships, opt => opt.Ignore());
+            .ForMember(dest => dest.Members, opt => opt.Ignore());
         CreateMap<FamilyMemberRequest, FamilyMember>()
             .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
         //FamilyTree
@@ -28,14 +27,12 @@ public class MappingProfile : Profile
         CreateMap<Relationship, RelationshipResponse>()
           .ForMember(dest => dest.FromMemberName, opt => opt.MapFrom(src => src.FromMember.Name))
           .ForMember(dest => dest.ToMemberName, opt => opt.MapFrom(src => src.ToMember.Name))
-          .ForMember(dest => dest.RelationshipTypeName, opt => opt.MapFrom(src => src.RelationshipType.Name));
-        CreateMap<CreateRelationshipRequest, Relationship>();
-        CreateMap<UpdateRelationshipRequest, Relationship>()
+          .ForMember(dest => dest.RelationshipType, opt => opt.MapFrom(src => src.RelationshipType));
+        CreateMap<RelationshipRequest, Relationship>()
             .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
         //RelationshipType
         CreateMap<RelationshipType, RelationshipTypeResponse>();
-        CreateMap<CreateRelationshipTypeRequest, RelationshipType>();
-        CreateMap<UpdateRelationshipTypeRequest, RelationshipType>()
+        CreateMap<RelationshipTypeRequest, RelationshipType>()
             .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
         //User
         CreateMap<User, UserResponse>();

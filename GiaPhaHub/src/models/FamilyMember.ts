@@ -1,3 +1,5 @@
+import type { RelationshipResponse } from "@/models/Relationship";
+
 export interface FamilyMemberResponse {
   id: number;
   name: string;
@@ -14,13 +16,8 @@ export interface FamilyMemberResponse {
   children: number[];
   spouses: number[];
   members: Record<number, FamilyMemberResponse> | FamilyMemberResponse[];
-  relationships: MemberRelationship[];
-}
-
-export interface MemberRelationship {
-  memberId: number;
-  memberName: string;
-  relationship: string;
+  fromRelationships?: RelationshipResponse[];
+  toRelationships?: RelationshipResponse[];
 }
 export interface FamilyMemberRequest {
   name: string;

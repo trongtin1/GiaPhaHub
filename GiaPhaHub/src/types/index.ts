@@ -1,6 +1,5 @@
 export type Gender = "male" | "female";
 
-
 export interface FamilyTree {
   id: number;
   name: string;
@@ -16,6 +15,7 @@ export interface Relationship {
   relationshipTypeId: number;
   fromMemberName?: string;
   toMemberName?: string;
+  relationshipType?: RelationshipType;
   relationshipTypeName?: string;
 }
 

@@ -39,15 +39,22 @@ public class RelationshipController : ControllerBase
         return StatusCode((int)result.StatusCode, result);
     }
 
+    [HttpPost("infer-kinship")]
+    public async Task<IActionResult> InferKinship([FromBody] KinshipInferenceRequest request)
+    {
+        var result = await _relationshipService.InferKinship(request);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateRelationshipRequest request)
+    public async Task<IActionResult> Create([FromBody] RelationshipRequest request)
     {
         var result = await _relationshipService.Create(request);
         return StatusCode((int)result.StatusCode, result);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateRelationshipRequest request)
+    public async Task<IActionResult> Update(int id, [FromBody] RelationshipRequest request)
     {
         var result = await _relationshipService.Update(id, request);
         return StatusCode((int)result.StatusCode, result);

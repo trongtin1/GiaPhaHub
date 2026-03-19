@@ -33,14 +33,14 @@ public class RelationshipTypeController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateRelationshipTypeRequest request)
+    public async Task<IActionResult> Create([FromBody] RelationshipTypeRequest request)
     {
         var result = await _relationshipTypeService.Create(request);
         return StatusCode((int)result.StatusCode, result);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateRelationshipTypeRequest request)
+    public async Task<IActionResult> Update(int id, [FromBody] RelationshipTypeRequest request)
     {
         var result = await _relationshipTypeService.Update(id, request);
         return StatusCode((int)result.StatusCode, result);

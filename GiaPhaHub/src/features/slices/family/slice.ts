@@ -1,7 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { ResourceState } from "@/types";
 import type { FamilyMemberResponse } from "@/models/FamilyMember";
-import { createMember, editMember, fetchMembers, removeMember } from "./thunks";
+import {
+  createMember,
+  editMember,
+  fetchDetailMember,
+  fetchMembers,
+  removeMember,
+} from "./thunks";
 
 type FamilyState = ResourceState<FamilyMemberResponse[]>;
 
@@ -29,6 +35,25 @@ const familySlice = createSlice({
         state.error = action.payload as string;
         state.loading = false;
       })
+
+      .addCase(fetchDetailMember.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchDetailMember.fulfilled, (state, action) => {
+        const idx = state.data.findIndex((m) => m.id === action.payload.id);
+        if (idx !== -1) {
+          state.data[idx] = action.payload;
+        } else {
+          state.data.push(action.payload);
+        }
+        state.loading = false;
+      })
+      .addCase(fetchDetailMember.rejected, (state, action) => {
+        state.error = action.payload as string;
+        state.loading = false;
+      })
+
       .addCase(createMember.fulfilled, (state, action) => {
         state.data.push(action.payload);
       })

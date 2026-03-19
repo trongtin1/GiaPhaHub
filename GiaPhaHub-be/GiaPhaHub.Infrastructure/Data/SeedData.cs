@@ -21,10 +21,8 @@ public static class SeedData
     private static void SeedRelationshipTypes(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<RelationshipType>().HasData(
-            new RelationshipType { Id = 1, Name = "Father", Description = "Cha" },
-            new RelationshipType { Id = 2, Name = "Mother", Description = "Mẹ" },
-            new RelationshipType { Id = 3, Name = "Spouse", Description = "Vợ/Chồng" },
-            new RelationshipType { Id = 4, Name = "Sibling", Description = "Anh/Chị/Em" }
+            new RelationshipType { Id = 1, Name = "Parent", Description = "Cha/Mẹ" },
+            new RelationshipType { Id = 2, Name = "Spouse", Description = "Vợ/Chồng" }
         );
     }
 
@@ -190,46 +188,46 @@ public static class SeedData
     private static void SeedRelationships(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Relationship>().HasData(
-            // Ông An là cha của Cường
+            // Ông An là parent của Cường
             new Relationship
             {
                 Id = 1,
                 FromMemberId = 3,
                 ToMemberId = 1,
-                RelationshipTypeId = 1, // Father
+                RelationshipTypeId = 1, // Parent
                 IsDelete = false,
                 CreateDate = SeedDate,
                 ModifiedDate = SeedDate
             },
-            // Bà Bình là mẹ của Cường
+            // Bà Bình là parent của Cường
             new Relationship
             {
                 Id = 2,
                 FromMemberId = 3,
                 ToMemberId = 2,
-                RelationshipTypeId = 2, // Mother
+                RelationshipTypeId = 1, // Parent
                 IsDelete = false,
                 CreateDate = SeedDate,
                 ModifiedDate = SeedDate
             },
-            // Ông An là cha của Em
+            // Ông An là parent của Em
             new Relationship
             {
                 Id = 3,
                 FromMemberId = 5,
                 ToMemberId = 1,
-                RelationshipTypeId = 1, // Father
+                RelationshipTypeId = 1, // Parent
                 IsDelete = false,
                 CreateDate = SeedDate,
                 ModifiedDate = SeedDate
             },
-            // Bà Bình là mẹ của Em
+            // Bà Bình là parent của Em
             new Relationship
             {
                 Id = 4,
                 FromMemberId = 5,
                 ToMemberId = 2,
-                RelationshipTypeId = 2, // Mother
+                RelationshipTypeId = 1, // Parent
                 IsDelete = false,
                 CreateDate = SeedDate,
                 ModifiedDate = SeedDate
@@ -240,7 +238,7 @@ public static class SeedData
                 Id = 5,
                 FromMemberId = 1,
                 ToMemberId = 2,
-                RelationshipTypeId = 3, // Spouse
+                RelationshipTypeId = 2, // Spouse
                 IsDelete = false,
                 CreateDate = SeedDate,
                 ModifiedDate = SeedDate
@@ -251,73 +249,51 @@ public static class SeedData
                 Id = 6,
                 FromMemberId = 3,
                 ToMemberId = 4,
-                RelationshipTypeId = 3, // Spouse
+                RelationshipTypeId = 2, // Spouse
                 IsDelete = false,
                 CreateDate = SeedDate,
                 ModifiedDate = SeedDate
             },
-            // Cường và Em là anh em
+            // Cường là parent của Phong
             new Relationship
             {
                 Id = 7,
-                FromMemberId = 3,
-                ToMemberId = 5,
-                RelationshipTypeId = 4, // Sibling
+                FromMemberId = 6,
+                ToMemberId = 3,
+                RelationshipTypeId = 1, // Parent
                 IsDelete = false,
                 CreateDate = SeedDate,
                 ModifiedDate = SeedDate
             },
-            // Cường là cha của Phong
+            // Dung là parent của Phong
             new Relationship
             {
                 Id = 8,
                 FromMemberId = 6,
-                ToMemberId = 3,
-                RelationshipTypeId = 1, // Father
+                ToMemberId = 4,
+                RelationshipTypeId = 1, // Parent
                 IsDelete = false,
                 CreateDate = SeedDate,
                 ModifiedDate = SeedDate
             },
-            // Dung là mẹ của Phong
+            // Cường là parent của Giang
             new Relationship
             {
                 Id = 9,
-                FromMemberId = 6,
-                ToMemberId = 4,
-                RelationshipTypeId = 2, // Mother
+                FromMemberId = 7,
+                ToMemberId = 3,
+                RelationshipTypeId = 1, // Parent
                 IsDelete = false,
                 CreateDate = SeedDate,
                 ModifiedDate = SeedDate
             },
-            // Cường là cha của Giang
+            // Dung là parent của Giang
             new Relationship
             {
                 Id = 10,
                 FromMemberId = 7,
-                ToMemberId = 3,
-                RelationshipTypeId = 1, // Father
-                IsDelete = false,
-                CreateDate = SeedDate,
-                ModifiedDate = SeedDate
-            },
-            // Dung là mẹ của Giang
-            new Relationship
-            {
-                Id = 11,
-                FromMemberId = 7,
                 ToMemberId = 4,
-                RelationshipTypeId = 2, // Mother
-                IsDelete = false,
-                CreateDate = SeedDate,
-                ModifiedDate = SeedDate
-            },
-            // Phong và Giang là anh em
-            new Relationship
-            {
-                Id = 12,
-                FromMemberId = 6,
-                ToMemberId = 7,
-                RelationshipTypeId = 4, // Sibling
+                RelationshipTypeId = 1, // Parent
                 IsDelete = false,
                 CreateDate = SeedDate,
                 ModifiedDate = SeedDate

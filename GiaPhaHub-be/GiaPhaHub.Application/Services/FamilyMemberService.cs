@@ -104,7 +104,7 @@ public class FamilyMemberService : BaseService, IFamilyMemberService
                 continue;
             }
 
-            if (CheckRelationship(relationName, "Father") || CheckRelationship(relationName, "Mother"))
+            if (CheckRelationship(relationName, "Parent"))
             {
                 // In current seed data: FromMemberId = child, ToMemberId = parent.
                 var childNode = nodeMap[rel.FromMemberId];
@@ -120,11 +120,19 @@ public class FamilyMemberService : BaseService, IFamilyMemberService
                     parentNode.Children.Add(childNode.Id);
                 }
 
-                if (CheckRelationship(relationName, "Father") && childNode.FatherId is null)
+                if (IsMale(parentNode.Gender) && childNode.FatherId is null)
                 {
                     childNode.FatherId = rel.ToMemberId;
                 }
-                else if (CheckRelationship(relationName, "Mother") && childNode.MotherId is null)
+                else if (IsFemale(parentNode.Gender) && childNode.MotherId is null)
+                {
+                    childNode.MotherId = rel.ToMemberId;
+                }
+                else if (childNode.FatherId is null)
+                {
+                    childNode.FatherId = rel.ToMemberId;
+                }
+                else if (childNode.MotherId is null)
                 {
                     childNode.MotherId = rel.ToMemberId;
                 }
@@ -166,14 +174,25 @@ public class FamilyMemberService : BaseService, IFamilyMemberService
 
         var repo = _unitOfWork.IFamilyMemberRepository;
         var member = await repo.FindSingle(
-            predicate: m => m.Id == id && m.IsDelete == false);
+                    predicate: m => m.Id == id && !m.IsDelete,
+                    include: q => q
+                        // FromRelationships
+                        .Include(m => m.FromRelationships)
+                            .ThenInclude(r => r.RelationshipType)
+                        .Include(m => m.FromRelationships)
+                            .ThenInclude(r => r.ToMember)
+
+                        // ToRelationships
+                        .Include(m => m.ToRelationships)
+                            .ThenInclude(r => r.RelationshipType)
+                        .Include(m => m.ToRelationships)
+                            .ThenInclude(r => r.FromMember),
+                    disableTracking: false);
 
         if (member is null)
             return NotFound<FamilyMemberResponse>($"Không tìm thấy thành viên có Id = {id}.");
 
         var response = _mapper.Map<FamilyMemberResponse>(member);
-        response.Relationships = await repo.GetMemberRelationships(id);
-
         return Success(response);
     }
 
@@ -228,5 +247,11 @@ public class FamilyMemberService : BaseService, IFamilyMemberService
 
     private static bool CheckRelationship(string relationName, string expectedRelation)
         => relationName.Equals(expectedRelation, StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsMale(string? gender)
+        => string.Equals(gender?.Trim(), "male", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsFemale(string? gender)
+        => string.Equals(gender?.Trim(), "female", StringComparison.OrdinalIgnoreCase);
 
 }

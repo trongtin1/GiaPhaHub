@@ -3,6 +3,7 @@ using AutoMapper;
 using GiaPhaHub_be.Application.Common;
 using GiaPhaHub_be.Application.DTOs;
 using GiaPhaHub_be.Application.Extensions;
+using GiaPhaHub_be.Application.Helpers.Kinship;
 using GiaPhaHub_be.Application.IServices;
 using GiaPhaHub_be.Domain.Common;
 using GiaPhaHub_be.Domain.Entities;
@@ -65,7 +66,64 @@ public class RelationshipService : BaseService, IRelationshipService
 
     }
 
-    public async Task<Result<RelationshipResponse>> Create(CreateRelationshipRequest request)
+    public async Task<Result<KinshipInferenceResponse>> InferKinship(KinshipInferenceRequest request)
+    {
+        if (request.SourceMemberId <= 0 || request.TargetMemberId <= 0)
+        {
+            return BadRequest<KinshipInferenceResponse>("SourceMemberId và TargetMemberId phải lớn hơn 0.");
+        }
+
+        var memberRepo = _unitOfWork.IFamilyMemberRepository;
+        var source = await memberRepo.FindSingle(m => m.Id == request.SourceMemberId && m.IsDelete == false);
+        var target = await memberRepo.FindSingle(m => m.Id == request.TargetMemberId && m.IsDelete == false);
+
+        if (source is null)
+        {
+            return NotFound<KinshipInferenceResponse>($"Không tìm thấy thành viên có Id = {request.SourceMemberId}.");
+        }
+
+        if (target is null)
+        {
+            return NotFound<KinshipInferenceResponse>($"Không tìm thấy thành viên có Id = {request.TargetMemberId}.");
+        }
+
+        if (source.FamilyTreeId != target.FamilyTreeId)
+        {
+            return BadRequest<KinshipInferenceResponse>("Hai thành viên không thuộc cùng một cây gia phả.");
+        }
+
+        var members = await memberRepo.FindList(
+            predicate: m => m.FamilyTreeId == source.FamilyTreeId && m.IsDelete == false,
+            orderBy: q => q.OrderBy(m => m.Id));
+
+        var memberMap = members.ToDictionary(m => m.Id);
+        var memberIds = memberMap.Keys.ToHashSet();
+
+        var relationships = await _unitOfWork.IRelationshipRepository.FindList(
+            predicate: r => r.IsDelete == false
+                && memberIds.Contains(r.FromMemberId)
+                && memberIds.Contains(r.ToMemberId),
+            include: q => q.Include(r => r.RelationshipType));
+
+        var inference = KinshipInferenceHelper.Infer(
+            memberMap,
+            relationships,
+            request.SourceMemberId,
+            request.TargetMemberId);
+
+        return Success(new KinshipInferenceResponse
+        {
+            SourceId = inference.SourceId,
+            TargetId = inference.TargetId,
+            SourceCallLabel = inference.SourceLabel,
+            TargetCallLabel = inference.TargetLabel,
+            HumanReadable = inference.HumanReadable,
+            ReverseHumanReadable = inference.ReverseHumanReadable,
+            IsBloodRelated = inference.IsBloodRelated
+        });
+    }
+
+    public async Task<Result<RelationshipResponse>> Create(RelationshipRequest request)
     {
         var repo = _unitOfWork.IRelationshipRepository;
         var rel = _mapper.Map<Relationship>(request);
@@ -84,7 +142,7 @@ public class RelationshipService : BaseService, IRelationshipService
         return Created(response);
     }
 
-    public async Task<Result<RelationshipResponse>> Update(int id, UpdateRelationshipRequest request)
+    public async Task<Result<RelationshipResponse>> Update(int id, RelationshipRequest request)
     {
         var repo = _unitOfWork.IRelationshipRepository;
         var rel = await repo.FindSingle(r => r.Id == id && r.IsDelete == false);

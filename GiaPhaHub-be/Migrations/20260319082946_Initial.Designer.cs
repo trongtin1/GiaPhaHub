@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GiaPhaHub_be.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260312172955_AddGenerationToFM")]
-    partial class AddGenerationToFM
+    [Migration("20260319082946_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -280,7 +280,7 @@ namespace GiaPhaHub_be.Migrations
                             FromMemberId = 3,
                             IsDelete = false,
                             ModifiedDate = new DateTimeOffset(new DateTime(2024, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            RelationshipTypeId = 2,
+                            RelationshipTypeId = 1,
                             ToMemberId = 2
                         },
                         new
@@ -300,7 +300,7 @@ namespace GiaPhaHub_be.Migrations
                             FromMemberId = 5,
                             IsDelete = false,
                             ModifiedDate = new DateTimeOffset(new DateTime(2024, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            RelationshipTypeId = 2,
+                            RelationshipTypeId = 1,
                             ToMemberId = 2
                         },
                         new
@@ -310,7 +310,7 @@ namespace GiaPhaHub_be.Migrations
                             FromMemberId = 1,
                             IsDelete = false,
                             ModifiedDate = new DateTimeOffset(new DateTime(2024, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            RelationshipTypeId = 3,
+                            RelationshipTypeId = 2,
                             ToMemberId = 2
                         },
                         new
@@ -320,18 +320,18 @@ namespace GiaPhaHub_be.Migrations
                             FromMemberId = 3,
                             IsDelete = false,
                             ModifiedDate = new DateTimeOffset(new DateTime(2024, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            RelationshipTypeId = 3,
+                            RelationshipTypeId = 2,
                             ToMemberId = 4
                         },
                         new
                         {
                             Id = 7,
                             CreateDate = new DateTimeOffset(new DateTime(2024, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            FromMemberId = 3,
+                            FromMemberId = 6,
                             IsDelete = false,
                             ModifiedDate = new DateTimeOffset(new DateTime(2024, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            RelationshipTypeId = 4,
-                            ToMemberId = 5
+                            RelationshipTypeId = 1,
+                            ToMemberId = 3
                         },
                         new
                         {
@@ -341,21 +341,11 @@ namespace GiaPhaHub_be.Migrations
                             IsDelete = false,
                             ModifiedDate = new DateTimeOffset(new DateTime(2024, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             RelationshipTypeId = 1,
-                            ToMemberId = 3
-                        },
-                        new
-                        {
-                            Id = 9,
-                            CreateDate = new DateTimeOffset(new DateTime(2024, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            FromMemberId = 6,
-                            IsDelete = false,
-                            ModifiedDate = new DateTimeOffset(new DateTime(2024, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            RelationshipTypeId = 2,
                             ToMemberId = 4
                         },
                         new
                         {
-                            Id = 10,
+                            Id = 9,
                             CreateDate = new DateTimeOffset(new DateTime(2024, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             FromMemberId = 7,
                             IsDelete = false,
@@ -365,23 +355,13 @@ namespace GiaPhaHub_be.Migrations
                         },
                         new
                         {
-                            Id = 11,
+                            Id = 10,
                             CreateDate = new DateTimeOffset(new DateTime(2024, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             FromMemberId = 7,
                             IsDelete = false,
                             ModifiedDate = new DateTimeOffset(new DateTime(2024, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            RelationshipTypeId = 2,
+                            RelationshipTypeId = 1,
                             ToMemberId = 4
-                        },
-                        new
-                        {
-                            Id = 12,
-                            CreateDate = new DateTimeOffset(new DateTime(2024, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            FromMemberId = 6,
-                            IsDelete = false,
-                            ModifiedDate = new DateTimeOffset(new DateTime(2024, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            RelationshipTypeId = 4,
-                            ToMemberId = 7
                         });
                 });
 
@@ -408,26 +388,14 @@ namespace GiaPhaHub_be.Migrations
                         new
                         {
                             Id = 1,
-                            Description = "Cha",
-                            Name = "Father"
+                            Description = "Cha/Mẹ",
+                            Name = "Parent"
                         },
                         new
                         {
                             Id = 2,
-                            Description = "Mẹ",
-                            Name = "Mother"
-                        },
-                        new
-                        {
-                            Id = 3,
                             Description = "Vợ/Chồng",
                             Name = "Spouse"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Description = "Anh/Chị/Em",
-                            Name = "Sibling"
                         });
                 });
 

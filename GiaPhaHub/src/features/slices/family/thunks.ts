@@ -16,6 +16,17 @@ export const fetchMembers = createAsyncThunk<FamilyMemberResponse[]>(
     }
   },
 );
+export const fetchDetailMember = createAsyncThunk<FamilyMemberResponse, number>(
+  "family/fetchOne",
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await FamilyService.getOne(id);
+      return res.data;
+    } catch (err) {
+      return rejectWithValue((err as Error).message);
+    }
+  },
+);
 
 export const createMember = createAsyncThunk<
   FamilyMemberResponse,

@@ -1,9 +1,6 @@
 import { useState, useMemo } from "react";
 import {
   Plus,
-  Pencil,
-  Trash2,
-  Eye,
   Search,
   ChevronLeft,
   ChevronRight,
@@ -25,37 +22,23 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { useFamily } from "@/context/useFamily";
 import MemberForm from "@/components/MemberForm";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import { useFamilyId } from "@/hooks/useFamilyId";
 import { paths } from "@/router/paths";
-import { FamilyMemberResponse } from "@/models/FamilyMember";
 import dayjs from "dayjs";
 
 const PAGE_SIZE = 15;
 
 export default function Members() {
-  const { members, deleteMember } = useFamily();
+  const { members } = useFamily();
   const navigate = useNavigate();
   const familyId = useFamilyId();
   const [search, setSearch] = useState("");
   const [filterGender, setFilterGender] = useState("");
   const [filterGen, setFilterGen] = useState("");
   const [formOpen, setFormOpen] = useState(false);
-  const [editMember, setEditMember] = useState<FamilyMemberResponse | null>(
-    null,
-  );
-  const [deleteConfirm, setDeleteConfirm] =
-    useState<FamilyMemberResponse | null>(null);
   const [page, setPage] = useState(1);
 
   const generations = [...new Set(members.map((m) => m.generation))].sort();
@@ -74,22 +57,8 @@ export default function Members() {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const handleEdit = (member: FamilyMemberResponse) => {
-    setEditMember(member);
-    setFormOpen(true);
-  };
   const handleAdd = () => {
-    setEditMember(null);
     setFormOpen(true);
-  };
-  const handleDelete = (member: FamilyMemberResponse) => {
-    setDeleteConfirm(member);
-  };
-  const confirmDelete = () => {
-    if (deleteConfirm) {
-      deleteMember(deleteConfirm.id);
-      setDeleteConfirm(null);
-    }
   };
 
   const hasFilters = search.trim().length > 0 || !!filterGender || !!filterGen;
@@ -225,7 +194,8 @@ export default function Members() {
             return (
               <Card
                 key={member.id}
-                className={`overflow-hidden rounded-3xl border bg-white shadow-[0_10px_30px_rgba(15,23,42,0.07)] transition-transform duration-200 hover:-translate-y-0.5 ${member.deathDate ? "border-slate-300/80 opacity-85" : "border-slate-200/90"}`}
+                className={`overflow-hidden rounded-3xl border bg-white shadow-[0_10px_30px_rgba(15,23,42,0.07)] transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_38px_rgba(15,23,42,0.1)] cursor-pointer ${member.deathDate ? "border-slate-300/80 opacity-85" : "border-slate-200/90"}`}
+                onClick={() => navigate(paths.member(familyId, member.id))}
               >
                 <CardContent className="p-4 sm:p-5">
                   <div className="flex items-start justify-between gap-3">
@@ -301,32 +271,9 @@ export default function Members() {
                       <Users size={13} />
                       Mã thành viên #{member.id}
                     </span>
-                    <div className="flex items-center gap-1.5">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          navigate(paths.member(familyId, member.id))
-                        }
-                      >
-                        <Eye size={14} /> Xem
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(member)}
-                      >
-                        <Pencil size={14} /> Sửa
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => handleDelete(member)}
-                      >
-                        <Trash2 size={14} /> Xóa
-                      </Button>
-                    </div>
+                    <span className="text-xs font-medium text-slate-600">
+                      Nhấn vào card để xem chi tiết
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -377,33 +324,9 @@ export default function Members() {
         open={formOpen}
         onClose={() => {
           setFormOpen(false);
-          setEditMember(null);
         }}
-        editMember={editMember}
+        editMember={null}
       />
-
-      <Dialog
-        open={!!deleteConfirm}
-        onOpenChange={(v) => !v && setDeleteConfirm(null)}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Xóa thành viên</DialogTitle>
-            <DialogDescription>
-              Bạn có chắc muốn xóa <strong>{deleteConfirm?.name}</strong> khỏi
-              gia phả? Hành động này không thể hoàn tác.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
-              Hủy
-            </Button>
-            <Button variant="destructive" onClick={confirmDelete}>
-              Xóa
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
