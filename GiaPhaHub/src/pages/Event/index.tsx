@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { CalendarDays, Clock3, MapPin, Search } from "lucide-react";
 import dayjs, { type Dayjs } from "dayjs";
 import { Input } from "@/components/ui/input";
@@ -84,7 +84,11 @@ function getNextOccurrence(event: EventRow, fromDate: Dayjs): Dayjs | null {
 }
 
 export default function EventsPage() {
-  const { members } = useFamily();
+  const { members, loadMembers } = useFamily();
+
+  useEffect(() => {
+    loadMembers();
+  }, [loadMembers]);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<MemberEventType | "all">("all");
 

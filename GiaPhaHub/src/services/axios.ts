@@ -62,6 +62,11 @@ instance.interceptors.response.use(
     const originalRequest = error.config;
     const status = error.response?.status;
 
+    // Nếu endpoint bị lỗi 401 là /Auth/refresh-token, không retry mà ném lỗi ra luôn
+    if (status === 401 && originalRequest.url?.includes("/Auth/refresh-token")) {
+      return Promise.reject(error.response?.data || error);
+    }
+
     if (status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       /* Nếu chưa refresh */

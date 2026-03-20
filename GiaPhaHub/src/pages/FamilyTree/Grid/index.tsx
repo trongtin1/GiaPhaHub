@@ -1,8 +1,22 @@
-import { useState } from "react";
-import { Plus, LayoutGrid, AlignLeft } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, LayoutGrid, AlignLeft, Check, ChevronsUpDown } from "lucide-react";
 import { useZoomPan } from "@/hooks/useZoomPan";
 import ZoomControls from "@/components/common/ZoomControls";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   Select,
   SelectContent,
@@ -30,7 +44,7 @@ import { useFamilyTree } from "@/pages/FamilyTree/useFamilyTree";
 import "@/pages/FamilyTree/Grid/Horizontal/css/htree.css";
 
 export default function FamilyGrid() {
-  const { members, deleteMember } = useFamily();
+  const { members, deleteMember, loadMembers } = useFamily();
   const {
     members: treeMembers,
     selectedRootId,
@@ -54,6 +68,7 @@ export default function FamilyGrid() {
     null,
   );
   const [deleteConfirm, setDeleteConfirm] = useState<FamilyMemberResponse | null>(null);
+  const [openSearch, setOpenSearch] = useState(false);
 
   const {
     scale,
@@ -71,6 +86,10 @@ export default function FamilyGrid() {
   const generations = [...new Set(members.map((m) => m.generation))].sort(
     (a, b) => a - b,
   );
+
+  useEffect(() => {
+    loadMembers();
+  }, [loadMembers]);
 
   const filtered = members.filter((m) => {
     const matchSearch = m.name.toLowerCase().includes(search.toLowerCase());
@@ -150,21 +169,52 @@ export default function FamilyGrid() {
           </div>
 
           {viewMode === "htree" && (
-            <Select
-              value={selectedRootId ? String(selectedRootId) : undefined}
-              onValueChange={(v) => setSelectedRootId(Number(v))}
-            >
-              <SelectTrigger className="min-w-60 h-9">
-                <SelectValue placeholder="Chọn thành viên gốc" />
-              </SelectTrigger>
-              <SelectContent>
-                {treeMembers.map((member) => (
-                  <SelectItem key={member.id} value={String(member.id)}>
-                    {member.name} (Đời {member.generation})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={openSearch} onOpenChange={setOpenSearch}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={openSearch}
+                  className="min-w-60 h-9 justify-between font-normal"
+                >
+                  {selectedRootId
+                    ? (() => {
+                        const m = treeMembers.find((m) => m.id === selectedRootId);
+                        return m ? `${m.name} (Đời ${m.generation})` : "Chọn thành viên gốc";
+                      })()
+                    : "Chọn thành viên gốc"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-75 p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Tìm kiếm thành viên..." />
+                  <CommandList>
+                    <CommandEmpty>Không tìm thấy thành viên nào.</CommandEmpty>
+                    <CommandGroup>
+                      {treeMembers.map((member) => (
+                        <CommandItem
+                          key={member.id}
+                          value={`${member.name} ${member.generation} ${member.id}`}
+                          onSelect={() => {
+                            setSelectedRootId(member.id);
+                            setOpenSearch(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedRootId === member.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {member.name} (Đời {member.generation})
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           )}
 
           <button

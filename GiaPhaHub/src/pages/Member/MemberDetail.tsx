@@ -30,16 +30,17 @@ export default function MemberDetail() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const familyId = useFamilyId();
-  const { getMember, getChildren, getSpouse, getParent, loading } = useFamily();
+  const { getMember, getChildren, getSpouse, getParent, loading, loadMembers } = useFamily();
   const [editOpen, setEditOpen] = useState(false);
   const memberId = Number(id);
   const member = getMember(memberId);
 
   useEffect(() => {
+    loadMembers();
     if (Number.isFinite(memberId) && memberId > 0) {
       dispatch(fetchDetailMember(memberId));
     }
-  }, [dispatch, memberId]);
+  }, [dispatch, memberId, loadMembers]);
 
   if (!member && loading) {
     return (

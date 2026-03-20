@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { CalendarDays, MapPin, Search, Users } from "lucide-react";
 import dayjs from "dayjs";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,11 @@ import { familyPhotoMocks, type FamilyPhotoItem } from "@/mocks/familyPhotos";
 type SortValue = "newest" | "oldest";
 
 export default function GalleryPage() {
-  const { members } = useFamily();
+  const { members, loadMembers } = useFamily();
+
+  useEffect(() => {
+    loadMembers();
+  }, [loadMembers]);
   const [keyword, setKeyword] = useState("");
   const [sortBy, setSortBy] = useState<SortValue>("newest");
   const [memberFilter, setMemberFilter] = useState<string>("");

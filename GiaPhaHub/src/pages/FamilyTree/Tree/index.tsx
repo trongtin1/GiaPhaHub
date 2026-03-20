@@ -3,16 +3,27 @@ import TreeNode from "@/pages/FamilyTree/Tree/components/TreeNode";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import ZoomControls from "@/components/common/ZoomControls";
 import { useFamilyTree } from "@/pages/FamilyTree/useFamilyTree";
+import { useState } from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import "./css/tree.css";
 
 export default function FamilyTree() {
+  const [openSearch, setOpenSearch] = useState(false);
   const {
     members,
     selectedRootId,
@@ -53,21 +64,52 @@ export default function FamilyTree() {
             </p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            <Select
-              value={selectedRootId ? String(selectedRootId) : undefined}
-              onValueChange={(v) => setSelectedRootId(Number(v))}
-            >
-              <SelectTrigger className="min-w-60 h-9">
-                <SelectValue placeholder="Chọn thành viên gốc" />
-              </SelectTrigger>
-              <SelectContent>
-                {members.map((member) => (
-                  <SelectItem key={member.id} value={String(member.id)}>
-                    {member.name} (Đời {member.generation})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={openSearch} onOpenChange={setOpenSearch}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={openSearch}
+                  className="min-w-60 h-9 justify-between font-normal"
+                >
+                  {selectedRootId
+                    ? (() => {
+                        const m = members.find((m) => m.id === selectedRootId);
+                        return m ? `${m.name} (Đời ${m.generation})` : "Chọn thành viên gốc";
+                      })()
+                    : "Chọn thành viên gốc"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-75 p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Tìm kiếm thành viên..." />
+                  <CommandList>
+                    <CommandEmpty>Không tìm thấy thành viên nào.</CommandEmpty>
+                    <CommandGroup>
+                      {members.map((member) => (
+                        <CommandItem
+                          key={member.id}
+                          value={`${member.name} ${member.generation} ${member.id}`}
+                          onSelect={() => {
+                            setSelectedRootId(member.id);
+                            setOpenSearch(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedRootId === member.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {member.name} (Đời {member.generation})
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
             <ZoomControls
               scale={scale}
               onZoomIn={zoomIn}

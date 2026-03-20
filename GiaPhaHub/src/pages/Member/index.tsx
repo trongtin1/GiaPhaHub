@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Plus,
   Search,
@@ -32,7 +32,7 @@ import dayjs from "dayjs";
 const PAGE_SIZE = 15;
 
 export default function Members() {
-  const { members } = useFamily();
+  const { members, loadMembers } = useFamily();
   const navigate = useNavigate();
   const familyId = useFamilyId();
   const [search, setSearch] = useState("");
@@ -42,6 +42,10 @@ export default function Members() {
   const [page, setPage] = useState(1);
 
   const generations = [...new Set(members.map((m) => m.generation))].sort();
+
+  useEffect(() => {
+    loadMembers();
+  }, [loadMembers]);
 
   const filtered = useMemo(
     () =>
@@ -78,7 +82,7 @@ export default function Members() {
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div>
               <h1 className="text-[1.65rem] font-bold leading-tight text-slate-900 sm:text-[1.95rem]">
-                Family Members Feed
+                Danh sách thành viên gia phả
               </h1>
               <p className="mt-1 max-w-3xl text-sm text-slate-600 sm:text-base">
                 Danh sách thành viên theo dạng card hiện đại, dễ theo dõi thông

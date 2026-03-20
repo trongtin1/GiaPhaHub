@@ -21,7 +21,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
+
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/features";
 import { selectFamilyResource } from "@/features/slices/family/selectors";
@@ -108,89 +108,92 @@ export default function DnaPredictionPage() {
         {label}
       </label>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-3 transition-all focus-within:border-amber-300 focus-within:shadow-[0_0_0_3px_rgba(251,191,36,0.16)]">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400">
-            <UserRound size={22} />
-          </div>
+      <Popover open={open} onOpenChange={onOpenChange}>
+        <PopoverTrigger asChild>
+          <div
+            id={inputId}
+            aria-label={label}
+            role="button"
+            tabIndex={0}
+            className={cn(
+              "cursor-pointer rounded-2xl border p-3 transition-all outline-none focus-visible:ring-2 focus-visible:ring-amber-500 hover:border-amber-300 hover:bg-slate-50",
+              open
+                ? "border-amber-300 shadow-[0_0_0_3px_rgba(251,191,36,0.16)] bg-slate-50"
+                : "border-slate-200 bg-white"
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                <UserRound size={22} />
+              </div>
 
-          <div className="min-w-0 flex-1">
-            <Popover open={open} onOpenChange={onOpenChange}>
-              <PopoverTrigger asChild>
-                <Button
-                  id={inputId}
-                  type="button"
-                  variant="ghost"
-                  role="combobox"
-                  aria-expanded={open}
-                  className="h-10 w-full justify-between border-none bg-transparent px-0 text-left text-lg font-semibold text-slate-600 shadow-none hover:bg-transparent"
-                >
+              <div className="min-w-0 flex-1">
+                <div className="flex h-8 w-full items-center justify-between border-none bg-transparent px-0 text-left text-lg font-semibold text-slate-600 shadow-none">
                   <span className="truncate">
                     {selectedName || "Chọn thành viên..."}
                   </span>
                   <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-60" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
-                align="start"
-                className="w-(--radix-popover-trigger-width) rounded-xl border border-slate-200 bg-white p-0 shadow-xl"
-              >
-                <Command>
-                  <CommandInput placeholder="Tìm thành viên..." />
-                  <CommandList>
-                    <CommandEmpty>Không tìm thấy thành viên.</CommandEmpty>
-                    <CommandGroup>
-                      <CommandItem
-                        value="Bỏ chọn"
-                        onSelect={() => {
-                          onChange("");
-                          onOpenChange(false);
-                        }}
-                        className="text-slate-500"
-                      >
-                        <Check
-                          className={cn(
-                            "size-4",
-                            value === "" ? "opacity-100" : "opacity-0",
-                          )}
-                        />
-                        Bỏ chọn
-                      </CommandItem>
-
-                      {options.map((member) => (
-                        <CommandItem
-                          key={member.id}
-                          value={`${member.name} ${member.generation} ${member.id}`}
-                          onSelect={() => {
-                            onChange(String(member.id));
-                            onOpenChange(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "size-4",
-                              value === String(member.id)
-                                ? "opacity-100"
-                                : "opacity-0",
-                            )}
-                          />
-                          {member.name} - Đời {member.generation}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-
-            {selectedName ? (
-              <p className="truncate text-xs text-slate-500">{selectedName}</p>
-            ) : (
-              <p className="text-xs text-slate-400">Chưa chọn thành viên</p>
-            )}
+                </div>
+                {selectedName ? (
+                  <p className="truncate text-xs text-slate-500 mt-1">{selectedName}</p>
+                ) : (
+                  <p className="text-xs text-slate-400 mt-1">Chưa chọn thành viên</p>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </PopoverTrigger>
+        <PopoverContent
+          align="start"
+          className="w-(--radix-popover-trigger-width) rounded-xl border border-slate-200 bg-white p-0 shadow-xl"
+        >
+          <Command>
+            <CommandInput placeholder="Tìm thành viên..." />
+            <CommandList>
+              <CommandEmpty>Không tìm thấy thành viên.</CommandEmpty>
+              <CommandGroup>
+                <CommandItem
+                  value="Bỏ chọn"
+                  onSelect={() => {
+                    onChange("");
+                    onOpenChange(false);
+                  }}
+                  className="text-slate-500"
+                >
+                  <Check
+                    className={cn(
+                      "size-4",
+                      value === "" ? "opacity-100" : "opacity-0",
+                    )}
+                  />
+                  Bỏ chọn
+                </CommandItem>
+
+                {options.map((member) => (
+                  <CommandItem
+                    key={member.id}
+                    value={`${member.name} ${member.generation} ${member.id}`}
+                    onSelect={() => {
+                      onChange(String(member.id));
+                      onOpenChange(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "size-4",
+                        value === String(member.id)
+                          ? "opacity-100"
+                          : "opacity-0",
+                      )}
+                    />
+                    {member.name} - Đời {member.generation}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 
