@@ -3,8 +3,18 @@ import type { RootState } from "@/features";
 import { getParentId, getSpouseId } from "@/utils/relationshipUtils";
 
 export const selectAllMembers = (state: RootState) => state.family.data;
-export const selectFamilyLoading = (state: RootState) => state.family.loading;
-export const selectFamilyError = (state: RootState) => state.family.error;
+
+export const selectFamilyResource = createSelector(
+  [
+    selectAllMembers,
+    (state: RootState) => state.family.status.fetchMembers,
+  ],
+  (data, status) => ({
+    data,
+    loading: status?.loading ?? false,
+    error: status?.error ?? null,
+  }),
+);
 
 export const selectMemberById = createSelector(
   [selectAllMembers, (_: RootState, id: number) => id],
@@ -39,4 +49,3 @@ export const selectParent = createSelector(
 export const selectRootMembers = createSelector([selectAllMembers], (members) =>
   members.filter((m) => !getParentId(m) && !getSpouseId(m)),
 );
-

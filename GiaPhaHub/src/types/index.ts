@@ -30,3 +30,5 @@ export interface ResourceState<T> {
   loading: boolean;
   error: string | null;
 }
+
+export type AsyncStatus = { loading: boolean; error: string | null };

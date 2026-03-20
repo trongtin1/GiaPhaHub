@@ -24,29 +24,25 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/features";
-import {
-  selectAllMembers,
-  selectFamilyError,
-  selectFamilyLoading,
-} from "@/features/slices/family/selectors";
+import { selectFamilyResource } from "@/features/slices/family/selectors";
 import { fetchMembers } from "@/features/slices/family/thunks";
-import {
-  selectKinshipError,
-  selectKinshipLoading,
-  selectKinshipResult,
-} from "@/features/slices/relationship/selectors";
+import { selectKinshipResource } from "@/features/slices/relationship/selectors";
 import { clearKinshipResult } from "@/features/slices/relationship/slice";
 import { inferKinship } from "@/features/slices/relationship/thunks";
 import { paths } from "@/router/paths";
 
 export default function DnaPredictionPage() {
   const dispatch = useAppDispatch();
-  const members = useAppSelector(selectAllMembers);
-  const membersLoading = useAppSelector(selectFamilyLoading);
-  const membersError = useAppSelector(selectFamilyError) ?? "";
-  const kinshipResult = useAppSelector(selectKinshipResult);
-  const kinshipLoading = useAppSelector(selectKinshipLoading);
-  const kinshipError = useAppSelector(selectKinshipError) ?? "";
+  const {
+    data: members,
+    loading: membersLoading,
+    error: membersError,
+  } = useAppSelector(selectFamilyResource);
+  const {
+    kinship: kinshipResult,
+    loading: kinshipLoading,
+    error: kinshipError,
+  } = useAppSelector(selectKinshipResource);
 
   const [memberAId, setMemberAId] = useState<string>("");
   const [memberBId, setMemberBId] = useState<string>("");

@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import type { ResourceState } from "@/types";
+import type { AsyncStatus } from "@/types";
 import type { FamilyMemberResponse } from "@/models/FamilyMember";
 import {
   createMember,
@@ -9,12 +9,14 @@ import {
   removeMember,
 } from "./thunks";
 
-type FamilyState = ResourceState<FamilyMemberResponse[]>;
+interface FamilyState {
+  data: FamilyMemberResponse[];
+  status: Record<string, AsyncStatus>;
+}
 
 const initialState: FamilyState = {
   data: [],
-  loading: false,
-  error: null,
+  status: {},
 };
 
 const familySlice = createSlice({
@@ -24,21 +26,21 @@ const familySlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchMembers.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.status.fetchMembers = { loading: true, error: null };
       })
       .addCase(fetchMembers.fulfilled, (state, action) => {
         state.data = action.payload;
-        state.loading = false;
+        state.status.fetchMembers = { loading: false, error: null };
       })
       .addCase(fetchMembers.rejected, (state, action) => {
-        state.error = action.payload as string;
-        state.loading = false;
+        state.status.fetchMembers = {
+          loading: false,
+          error: action.payload as string,
+        };
       })
 
       .addCase(fetchDetailMember.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.status.fetchDetailMember = { loading: true, error: null };
       })
       .addCase(fetchDetailMember.fulfilled, (state, action) => {
         const idx = state.data.findIndex((m) => m.id === action.payload.id);
@@ -47,11 +49,13 @@ const familySlice = createSlice({
         } else {
           state.data.push(action.payload);
         }
-        state.loading = false;
+        state.status.fetchDetailMember = { loading: false, error: null };
       })
       .addCase(fetchDetailMember.rejected, (state, action) => {
-        state.error = action.payload as string;
-        state.loading = false;
+        state.status.fetchDetailMember = {
+          loading: false,
+          error: action.payload as string,
+        };
       })
 
       .addCase(createMember.fulfilled, (state, action) => {

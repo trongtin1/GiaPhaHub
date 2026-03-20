@@ -9,17 +9,11 @@ import {
   editMember,
   removeMember,
 } from "@/features/slices/family/thunks";
-import {
-  selectAllMembers,
-  selectFamilyLoading,
-  selectFamilyError,
-} from "@/features/slices/family/selectors";
+import { selectFamilyResource } from "@/features/slices/family/selectors";
 
 export function FamilyProvider({ children }: { children: ReactNode }) {
   const dispatch = useAppDispatch();
-  const members = useAppSelector(selectAllMembers);
-  const loading = useAppSelector(selectFamilyLoading);
-  const error = useAppSelector(selectFamilyError);
+  const { data: members, loading, error } = useAppSelector(selectFamilyResource);
   // const accessToken = useAppSelector((state) => state.auth.accessToken);
 
   useEffect(() => {

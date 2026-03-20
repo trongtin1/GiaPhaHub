@@ -4,6 +4,7 @@ import type {
   RelationshipResponse,
   RelationshipTypeResponse,
 } from "@/models/Relationship";
+import type { AsyncStatus } from "@/types";
 import {
   createRelationship,
   editRelationship,
@@ -15,27 +16,17 @@ import {
 } from "./thunks";
 
 interface RelationshipState {
-  data: RelationshipResponse[];
-  types: RelationshipTypeResponse[];
-  loading: boolean;
-  loadingTypes: boolean;
-  error: string | null;
-  typeError: string | null;
+  relationships: RelationshipResponse[];
+  relationshipTypes: RelationshipTypeResponse[];
   kinship: KinshipInferenceResponse | null;
-  kinshipLoading: boolean;
-  kinshipError: string | null;
+  status: Record<string, AsyncStatus>;
 }
 
 const initialState: RelationshipState = {
-  data: [],
-  types: [],
-  loading: false,
-  loadingTypes: false,
-  error: null,
-  typeError: null,
+  relationships: [],
+  relationshipTypes: [],
   kinship: null,
-  kinshipLoading: false,
-  kinshipError: null,
+  status: {},
 };
 
 const relationshipSlice = createSlice({
@@ -44,74 +35,85 @@ const relationshipSlice = createSlice({
   reducers: {
     clearKinshipResult: (state) => {
       state.kinship = null;
-      state.kinshipError = null;
-      state.kinshipLoading = false;
+      state.status.inferKinship = { loading: false, error: null };
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchRelationships.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.status.fetchRelationships = { loading: true, error: null };
       })
       .addCase(fetchRelationships.fulfilled, (state, action) => {
-        state.data = action.payload;
-        state.loading = false;
+        state.relationships = action.payload;
+        state.status.fetchRelationships = { loading: false, error: null };
       })
       .addCase(fetchRelationships.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        state.status.fetchRelationships = {
+          loading: false,
+          error: action.payload as string,
+        };
       })
       .addCase(fetchRelationshipsByMemberId.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.status.fetchRelationshipsByMemberId = {
+          loading: true,
+          error: null,
+        };
       })
       .addCase(fetchRelationshipsByMemberId.fulfilled, (state, action) => {
-        state.data = action.payload;
-        state.loading = false;
+        state.relationships = action.payload;
+        state.status.fetchRelationshipsByMemberId = {
+          loading: false,
+          error: null,
+        };
       })
       .addCase(fetchRelationshipsByMemberId.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        state.status.fetchRelationshipsByMemberId = {
+          loading: false,
+          error: action.payload as string,
+        };
       })
       .addCase(createRelationship.fulfilled, (state, action) => {
-        state.data.push(action.payload);
+        state.relationships.push(action.payload);
       })
       .addCase(editRelationship.fulfilled, (state, action) => {
-        const idx = state.data.findIndex(
+        const idx = state.relationships.findIndex(
           (item) => item.id === action.payload.id,
         );
         if (idx !== -1) {
-          state.data[idx] = action.payload;
+          state.relationships[idx] = action.payload;
         }
       })
       .addCase(removeRelationship.fulfilled, (state, action) => {
-        state.data = state.data.filter((item) => item.id !== action.payload);
+        state.relationships = state.relationships.filter(
+          (item) => item.id !== action.payload,
+        );
       })
       .addCase(fetchRelationshipTypes.pending, (state) => {
-        state.loadingTypes = true;
-        state.typeError = null;
+        state.status.fetchRelationshipTypes = { loading: true, error: null };
       })
       .addCase(fetchRelationshipTypes.fulfilled, (state, action) => {
-        state.types = action.payload;
-        state.loadingTypes = false;
+        state.relationshipTypes = action.payload;
+        state.status.fetchRelationshipTypes = { loading: false, error: null };
       })
       .addCase(fetchRelationshipTypes.rejected, (state, action) => {
-        state.loadingTypes = false;
-        state.typeError = action.payload as string;
+        state.status.fetchRelationshipTypes = {
+          loading: false,
+          error: action.payload as string,
+        };
       })
       .addCase(inferKinship.pending, (state) => {
-        state.kinshipLoading = true;
-        state.kinshipError = null;
+        state.status.inferKinship = { loading: true, error: null };
       })
       .addCase(inferKinship.fulfilled, (state, action) => {
         state.kinship = action.payload;
-        state.kinshipLoading = false;
+        state.status.inferKinship = { loading: false, error: null };
       })
       .addCase(inferKinship.rejected, (state, action) => {
         state.kinship = null;
-        state.kinshipLoading = false;
-        state.kinshipError = action.payload as string;
+        state.status.inferKinship = {
+          loading: false,
+          error: action.payload as string,
+        };
       });
   },
 });

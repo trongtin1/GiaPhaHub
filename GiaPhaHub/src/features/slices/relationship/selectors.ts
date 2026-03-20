@@ -2,23 +2,45 @@ import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/features";
 
 export const selectRelationships = (state: RootState) =>
-  state.relationship.data;
+  state.relationship.relationships;
 export const selectRelationshipTypes = (state: RootState) =>
-  state.relationship.types;
-export const selectRelationshipLoading = (state: RootState) =>
-  state.relationship.loading;
-export const selectRelationshipError = (state: RootState) =>
-  state.relationship.error;
-export const selectRelationshipTypeLoading = (state: RootState) =>
-  state.relationship.loadingTypes;
-export const selectRelationshipTypeError = (state: RootState) =>
-  state.relationship.typeError;
-export const selectKinshipResult = (state: RootState) =>
-  state.relationship.kinship;
-export const selectKinshipLoading = (state: RootState) =>
-  state.relationship.kinshipLoading;
-export const selectKinshipError = (state: RootState) =>
-  state.relationship.kinshipError;
+  state.relationship.relationshipTypes;
+
+export const selectRelationshipResource = createSelector(
+  [
+    selectRelationships,
+    (state: RootState) => state.relationship.status.fetchRelationships,
+  ],
+  (data, status) => ({
+    data,
+    loading: status?.loading ?? false,
+    error: status?.error ?? null,
+  }),
+);
+
+export const selectRelationshipTypeResource = createSelector(
+  [
+    selectRelationshipTypes,
+    (state: RootState) => state.relationship.status.fetchRelationshipTypes,
+  ],
+  (types, status) => ({
+    types,
+    loading: status?.loading ?? false,
+    error: status?.error ?? null,
+  }),
+);
+
+export const selectKinshipResource = createSelector(
+  [
+    (state: RootState) => state.relationship.kinship,
+    (state: RootState) => state.relationship.status.inferKinship,
+  ],
+  (kinship, status) => ({
+    kinship,
+    loading: status?.loading ?? false,
+    error: status?.error ?? null,
+  }),
+);
 
 export const selectRelationshipById = createSelector(
   [
