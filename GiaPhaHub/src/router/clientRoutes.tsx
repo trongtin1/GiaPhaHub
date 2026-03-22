@@ -16,7 +16,9 @@ const HorizontalFamilyTree = lazy(
 );
 const EventsPage = lazy(() => import("@/pages/Event"));
 const PhotoLibraryPage = lazy(() => import("@/pages/Gallery"));
-const MemberDetail = lazy(() => import("@/pages/Member/MemberDetail"));
+const MemberDetail = lazy(
+  () => import("@/pages/Member/MemberDetail/MemberDetail"),
+);
 const DnaPredictionPage = lazy(() => import("@/pages/DnaPrediction"));
 export const clientRoutes: RouteObject[] = [
   { path: "/", element: <Homepage /> },

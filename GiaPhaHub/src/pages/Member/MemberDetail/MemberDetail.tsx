@@ -13,7 +13,7 @@ import {
 import { useEffect, useState } from "react";
 import { useFamily } from "@/context/useFamily";
 import MemberForm from "@/components/MemberForm";
-import MemberCard from "@/pages/Member/MemberCard";
+import MemberCard from "@/pages/Member/MemberDetail/MemberCard";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import { useFamilyId } from "@/hooks/useFamilyId";
 import { paths } from "@/router/paths";
@@ -30,7 +30,8 @@ export default function MemberDetail() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const familyId = useFamilyId();
-  const { getMember, getChildren, getSpouse, getParent, loading, loadMembers } = useFamily();
+  const { getMember, getChildren, getSpouse, getParent, loading, loadMembers } =
+    useFamily();
   const [editOpen, setEditOpen] = useState(false);
   const memberId = Number(id);
   const member = getMember(memberId);

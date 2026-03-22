@@ -7,9 +7,7 @@ import {
   CalendarDays,
   MapPin,
   Phone,
-  Users,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -24,8 +22,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFamily } from "@/context/useFamily";
 import MemberForm from "@/components/MemberForm";
+import MemberDetailDialog from "@/components/MemberDetailDialog";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
-import { useFamilyId } from "@/hooks/useFamilyId";
 import { paths } from "@/router/paths";
 import dayjs from "dayjs";
 
@@ -33,13 +31,12 @@ const PAGE_SIZE = 15;
 
 export default function Members() {
   const { members, loadMembers } = useFamily();
-  const navigate = useNavigate();
-  const familyId = useFamilyId();
   const [search, setSearch] = useState("");
   const [filterGender, setFilterGender] = useState("");
   const [filterGen, setFilterGen] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
 
   const generations = [...new Set(members.map((m) => m.generation))].sort();
 
@@ -199,7 +196,7 @@ export default function Members() {
               <Card
                 key={member.id}
                 className={`overflow-hidden rounded-3xl border bg-white shadow-[0_10px_30px_rgba(15,23,42,0.07)] transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_38px_rgba(15,23,42,0.1)] cursor-pointer ${member.deathDate ? "border-slate-300/80 opacity-85" : "border-slate-200/90"}`}
-                onClick={() => navigate(paths.member(familyId, member.id))}
+                onClick={() => setSelectedMemberId(member.id)}
               >
                 <CardContent className="p-4 sm:p-5">
                   <div className="flex items-start justify-between gap-3">
@@ -270,11 +267,7 @@ export default function Members() {
                     </p>
                   )}
 
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
-                    <span className="inline-flex items-center gap-1 text-xs text-slate-500">
-                      <Users size={13} />
-                      Mã thành viên #{member.id}
-                    </span>
+                  <div className="mt-4 flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 pt-3">
                     <span className="text-xs font-medium text-slate-600">
                       Nhấn vào card để xem chi tiết
                     </span>
@@ -330,6 +323,12 @@ export default function Members() {
           setFormOpen(false);
         }}
         editMember={null}
+      />
+
+      <MemberDetailDialog
+        memberId={selectedMemberId}
+        open={selectedMemberId !== null}
+        onClose={() => setSelectedMemberId(null)}
       />
     </div>
   );
