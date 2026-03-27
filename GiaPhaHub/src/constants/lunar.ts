@@ -1,0 +1,41 @@
+export const CAN_MAP: Record<string, string> = {
+  甲: "Giáp",
+  乙: "Ất",
+  丙: "Bính",
+  丁: "Đinh",
+  戊: "Mậu",
+  己: "Kỷ",
+  庚: "Canh",
+  辛: "Tân",
+  壬: "Nhâm",
+  癸: "Quý",
+};
+
+export const CHI_MAP: Record<string, string> = {
+  子: "Tý",
+  丑: "Sửu",
+  寅: "Dần",
+  卯: "Mão",
+  辰: "Thìn",
+  巳: "Tỵ",
+  午: "Ngọ",
+  未: "Mùi",
+  申: "Thân",
+  酉: "Dậu",
+  戌: "Tuất",
+  亥: "Hợi",
+};
+export const MONTH_MAP: Record<string, string> = {
+  一: "1",
+  二: "2",
+  三: "3",
+  四: "4",
+  五: "5",
+  六: "6",
+  七: "7",
+  八: "8",
+  九: "9",
+  十: "10",
+  十一: "11",
+  十二: "12",
+};

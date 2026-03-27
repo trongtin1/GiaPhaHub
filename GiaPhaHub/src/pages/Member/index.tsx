@@ -26,6 +26,7 @@ import MemberDetailDialog from "@/components/MemberDetailDialog";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import { paths } from "@/router/paths";
 import dayjs from "dayjs";
+import { getLunarDeathAnniversary } from "@/utils/lunarUtils";
 
 const PAGE_SIZE = 15;
 
@@ -242,10 +243,18 @@ export default function Members() {
                   <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-600">
                     <span className="inline-flex items-center gap-1.5">
                       <CalendarDays size={15} className="text-slate-500" />
-                      {member.birthDate
-                        ? dayjs(member.birthDate).format("DD/MM/YYYY")
-                        : "Chưa có ngày sinh"}
-                      {age !== null && ` • ${age} tuổi`}
+                      {member.deathDate ? (
+                        "Đã mất: " +
+                        getLunarDeathAnniversary(member.deathDate) +
+                        " (Âm lịch)"
+                      ) : (
+                        <>
+                          {member.birthDate
+                            ? dayjs(member.birthDate).format("DD/MM/YYYY")
+                            : "Chưa có ngày sinh"}
+                          {age !== null && ` • ${age} tuổi`}
+                        </>
+                      )}
                     </span>
                     {member.address && (
                       <span className="inline-flex items-center gap-1.5">

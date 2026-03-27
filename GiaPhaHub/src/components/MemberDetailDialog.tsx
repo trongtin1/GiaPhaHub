@@ -32,6 +32,7 @@ import {
   mergeMemberRefs,
   type MemberRef,
 } from "@/utils/relationshipUtils";
+import { getLunarDeathAnniversary } from "@/utils/lunarUtils";
 
 /* ── Extracted sub-component (avoids "component created during render") ── */
 function RelationButton({
@@ -314,16 +315,27 @@ export default function MemberDetailDialog({
                     </div>
                   )}
                   {member.deathDate && (
-                    <div className="flex items-center gap-2.5">
-                      <Calendar size={14} className="shrink-0 text-slate-400" />
+                    <div className="flex items-start gap-2.5">
+                      <Calendar
+                        size={14}
+                        className="shrink-0 text-slate-400 mt-0.5"
+                      />
                       <div>
                         <span className="block text-[0.65rem] text-slate-400">
-                          Ngày mất
+                          Ngày mất (Dương lịch)
                         </span>
-                        <span className="text-sm text-slate-800">
+                        <span className="text-sm text-slate-800 block">
                           {dayjs(member.deathDate).format("DD/MM/YYYY")}
                           {age !== null && ` • Hưởng thọ ${age} tuổi`}
                         </span>
+                        <div className="mt-1.5 inline-flex bg-slate-100 rounded border border-slate-200 px-2 py-1">
+                          <span className="block text-[0.65rem] text-slate-500 mr-1.5">
+                            Giỗ âm lịch:
+                          </span>
+                          <span className="text-[0.7rem] font-medium text-slate-700">
+                            {getLunarDeathAnniversary(member.deathDate)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   )}
