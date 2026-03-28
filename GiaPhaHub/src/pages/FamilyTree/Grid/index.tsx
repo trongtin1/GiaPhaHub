@@ -1,7 +1,22 @@
 import { useState, useEffect } from "react";
-import { Plus, LayoutGrid, AlignLeft, Check, ChevronsUpDown } from "lucide-react";
-import { useZoomPan } from "@/hooks/useZoomPan";
-import ZoomControls from "@/components/common/ZoomControls";
+import {
+  Plus,
+  LayoutGrid,
+  AlignLeft,
+  Check,
+  ChevronsUpDown,
+} from "lucide-react";
+import {
+  ReactFlow,
+  Controls,
+  MiniMap,
+  Background,
+  BackgroundVariant,
+  useNodesState,
+  useEdgesState,
+} from "@xyflow/react";
+import type { Node, Edge } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
@@ -37,11 +52,15 @@ import { useFamily } from "@/context/useFamily";
 import MemberForm from "@/components/MemberForm";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import GenerationGrid from "@/pages/FamilyTree/Grid/Vertical";
-import HorizontalTreeNode from "@/pages/FamilyTree/Grid/Horizontal/components/HorizontalTreeNode";
+import FamilyNode from "@/pages/FamilyTree/Tree/components/FamilyNode";
+import { useHorizontalTreeLayout } from "@/pages/FamilyTree/Grid/Horizontal/useHorizontalTreeLayout";
 import { paths } from "@/router/paths";
 import type { FamilyMemberResponse } from "@/models/FamilyMember";
 import { useFamilyTree } from "@/pages/FamilyTree/useFamilyTree";
-import "@/pages/FamilyTree/Grid/Horizontal/css/htree.css";
+
+const nodeTypes = { familyNode: FamilyNode };
+const emptyNodes: Node[] = [];
+const emptyEdges: Edge[] = [];
 
 export default function FamilyGrid() {
   const { members, deleteMember, loadMembers } = useFamily();
@@ -49,7 +68,7 @@ export default function FamilyGrid() {
     members: treeMembers,
     selectedRootId,
     setSelectedRootId,
-    getRootMembers: getTreeRootMembers,
+    rootMembers: treeRootMembers,
     getChildren: getTreeChildren,
     getSpouse: getTreeSpouse,
     loading: treeLoading,
@@ -67,21 +86,23 @@ export default function FamilyGrid() {
   const [editMember, setEditMember] = useState<FamilyMemberResponse | null>(
     null,
   );
-  const [deleteConfirm, setDeleteConfirm] = useState<FamilyMemberResponse | null>(null);
+  const [deleteConfirm, setDeleteConfirm] =
+    useState<FamilyMemberResponse | null>(null);
   const [openSearch, setOpenSearch] = useState(false);
 
-  const {
-    scale,
-    position,
-    dragging,
-    containerRef,
-    zoomIn,
-    zoomOut,
-    reset,
-    onMouseDown,
-    onMouseMove,
-    onMouseUp,
-  } = useZoomPan(viewMode === "htree");
+  const { nodes: layoutNodes, edges: layoutEdges } = useHorizontalTreeLayout(
+    treeRootMembers,
+    getTreeChildren,
+    getTreeSpouse,
+  );
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(emptyNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(emptyEdges);
+
+  useEffect(() => {
+    setNodes(layoutNodes);
+    setEdges(layoutEdges);
+  }, [layoutNodes, layoutEdges, setNodes, setEdges]);
 
   const generations = [...new Set(members.map((m) => m.generation))].sort(
     (a, b) => a - b,
@@ -121,8 +142,6 @@ export default function FamilyGrid() {
       setDeleteConfirm(null);
     }
   };
-
-  const treeRootMembers = getTreeRootMembers();
 
   const segmentBtnCls = (active: boolean) =>
     `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer border-none ${
@@ -179,8 +198,12 @@ export default function FamilyGrid() {
                 >
                   {selectedRootId
                     ? (() => {
-                        const m = treeMembers.find((m) => m.id === selectedRootId);
-                        return m ? `${m.name} (Đời ${m.generation})` : "Chọn thành viên gốc";
+                        const m = treeMembers.find(
+                          (m) => m.id === selectedRootId,
+                        );
+                        return m
+                          ? `${m.name} (Đời ${m.generation})`
+                          : "Chọn thành viên gốc";
                       })()
                     : "Chọn thành viên gốc"}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -204,7 +227,9 @@ export default function FamilyGrid() {
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4",
-                              selectedRootId === member.id ? "opacity-100" : "opacity-0"
+                              selectedRootId === member.id
+                                ? "opacity-100"
+                                : "opacity-0",
                             )}
                           />
                           {member.name} (Đời {member.generation})
@@ -267,9 +292,7 @@ export default function FamilyGrid() {
           <Select
             value={filterStatus || "all"}
             onValueChange={(v) =>
-              setFilterStatus(
-                v === "all" ? "" : (v as "alive" | "deceased"),
-              )
+              setFilterStatus(v === "all" ? "" : (v as "alive" | "deceased"))
             }
           >
             <SelectTrigger className="min-w-42 h-9">
@@ -296,58 +319,49 @@ export default function FamilyGrid() {
       {/* Horizontal tree view */}
       {viewMode === "htree" && (
         <div
-          ref={containerRef}
           className="w-full overflow-hidden rounded-2xl relative border border-gray-200 shadow-sm"
-          style={{
-            height: "calc(100vh - 220px)",
-            background:
-              "radial-gradient(circle at 50% 50%, rgba(251,191,36,0.04) 0%, transparent 70%), #fafafa",
-            cursor: dragging ? "grabbing" : "grab",
-          }}
-          onMouseDown={onMouseDown}
-          onMouseMove={onMouseMove}
-          onMouseUp={onMouseUp}
-          onMouseLeave={onMouseUp}
+          style={{ height: "calc(100vh - 220px)" }}
         >
-          <ZoomControls
-            scale={scale}
-            onZoomIn={zoomIn}
-            onZoomOut={zoomOut}
-            onReset={reset}
-            className="absolute top-3 right-3 z-10"
-          />
-
-          <div
-            className="inline-flex items-center px-16 py-14 min-h-full origin-top-left"
-            style={{
-              transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-            }}
-          >
-            {treeLoading ? (
-              <div className="flex items-center justify-center min-h-75 text-lg text-gray-400">
-                <p>Đang tải cây gia phả...</p>
-              </div>
-            ) : treeError ? (
-              <div className="flex items-center justify-center min-h-75 text-lg text-red-500 text-center">
-                <p>{treeError}</p>
-              </div>
-            ) : treeRootMembers.length > 0 ? (
-              <ul className="list-none flex flex-col gap-0">
-                {treeRootMembers.map((root) => (
-                  <HorizontalTreeNode
-                    key={root.id}
-                    member={root}
-                    getChildren={getTreeChildren}
-                    getSpouse={getTreeSpouse}
-                  />
-                ))}
-              </ul>
-            ) : (
-              <div className="flex items-center justify-center min-h-75 text-lg text-gray-400">
-                <p>Chưa có thành viên nào. Hãy thêm thành viên đầu tiên!</p>
-              </div>
-            )}
-          </div>
+          {treeLoading ? (
+            <div className="flex items-center justify-center h-full text-lg text-gray-400">
+              Đang tải cây gia phả...
+            </div>
+          ) : treeError ? (
+            <div className="flex items-center justify-center h-full text-lg text-red-500 text-center">
+              {treeError}
+            </div>
+          ) : treeRootMembers.length === 0 ? (
+            <div className="flex items-center justify-center h-full text-lg text-gray-400">
+              Chưa có thành viên nào. Hãy thêm thành viên đầu tiên!
+            </div>
+          ) : (
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              nodeTypes={nodeTypes}
+              fitView
+              fitViewOptions={{ padding: 0.3 }}
+              minZoom={0.1}
+              maxZoom={2}
+              proOptions={{ hideAttribution: true }}
+            >
+              <Background
+                variant={BackgroundVariant.Dots}
+                gap={20}
+                size={1}
+                color="#d1d5db"
+              />
+              <Controls showInteractive={false} />
+              <MiniMap
+                nodeColor={(n) => {
+                  const data = n.data as { member?: { gender?: string } };
+                  return data?.member?.gender === "male" ? "#93c5fd" : "#f9a8d4";
+                }}
+              />
+            </ReactFlow>
+          )}
         </div>
       )}
 
@@ -361,12 +375,16 @@ export default function FamilyGrid() {
       />
 
       {/* Delete confirmation dialog */}
-      <Dialog open={!!deleteConfirm} onOpenChange={(v) => !v && setDeleteConfirm(null)}>
+      <Dialog
+        open={!!deleteConfirm}
+        onOpenChange={(v) => !v && setDeleteConfirm(null)}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Xóa thành viên</DialogTitle>
             <DialogDescription>
-              Bạn có chắc muốn xóa <strong>{deleteConfirm?.name}</strong> khỏi gia phả? Hành động này không thể hoàn tác.
+              Bạn có chắc muốn xóa <strong>{deleteConfirm?.name}</strong> khỏi
+              gia phả? Hành động này không thể hoàn tác.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

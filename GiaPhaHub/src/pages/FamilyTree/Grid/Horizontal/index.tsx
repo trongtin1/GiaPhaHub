@@ -1,38 +1,73 @@
-import { useZoomPan } from "@/hooks/useZoomPan";
-import HorizontalTreeNode from "@/pages/FamilyTree/Grid/Horizontal/components/HorizontalTreeNode";
+import {
+  ReactFlow,
+  Controls,
+  MiniMap,
+  Background,
+  BackgroundVariant,
+  useNodesState,
+  useEdgesState,
+} from "@xyflow/react";
+import type { Node, Edge } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+import { useEffect, useState } from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
-import ZoomControls from "@/components/common/ZoomControls";
-import { paths } from "@/router/paths";
 import { useFamilyTree } from "@/pages/FamilyTree/useFamilyTree";
-import "./css/htree.css";
+import { useHorizontalTreeLayout } from "./useHorizontalTreeLayout";
+import FamilyNode from "@/pages/FamilyTree/Tree/components/FamilyNode";
+
+const nodeTypes = { familyNode: FamilyNode };
+const emptyNodes: Node[] = [];
+const emptyEdges: Edge[] = [];
 
 export default function HorizontalFamilyTree() {
-  const { getRootMembers, getChildren, getSpouse, loading, error } =
-    useFamilyTree();
-  const rootMembers = getRootMembers();
+  const [openSearch, setOpenSearch] = useState(false);
   const {
-    scale,
-    position,
-    dragging,
-    containerRef,
-    zoomIn,
-    zoomOut,
-    reset,
-    onMouseDown,
-    onMouseMove,
-    onMouseUp,
-  } = useZoomPan();
+    members,
+    selectedRootId,
+    setSelectedRootId,
+    rootMembers,
+    getChildren,
+    getSpouse,
+    loading,
+    error,
+  } = useFamilyTree();
+
+  const { nodes: layoutNodes, edges: layoutEdges } = useHorizontalTreeLayout(
+    rootMembers,
+    getChildren,
+    getSpouse,
+  );
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(emptyNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(emptyEdges);
+
+  useEffect(() => {
+    setNodes(layoutNodes);
+    setEdges(layoutEdges);
+  }, [layoutNodes, layoutEdges, setNodes, setEdges]);
 
   return (
     <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-[fadeIn_0.4s_ease]">
       <div className="max-w-300 mx-auto">
         <PageBreadcrumb
-          items={[
-            { title: "Trang chủ", link: paths.home },
-            { title: "Sơ đồ ngang" },
-          ]}
+          items={[{ title: "Trang chủ", link: "/" }, { title: "Sơ đồ ngang" }]}
         />
-
         <div className="flex items-center justify-between mb-5 flex-wrap gap-4 max-md:flex-col max-md:items-stretch">
           <div>
             <h1 className="text-[1.75rem] font-bold bg-linear-to-r from-amber-600 via-orange-500 to-rose-500 bg-clip-text text-transparent">
@@ -43,63 +78,104 @@ export default function HorizontalFamilyTree() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap">
-            <ZoomControls
-              scale={scale}
-              onZoomIn={zoomIn}
-              onZoomOut={zoomOut}
-              onReset={reset}
-            />
-          </div>
+          <Popover open={openSearch} onOpenChange={setOpenSearch}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={openSearch}
+                className="min-w-60 h-9 justify-between font-normal"
+              >
+                {selectedRootId
+                  ? (() => {
+                      const m = members.find((m) => m.id === selectedRootId);
+                      return m
+                        ? `${m.name} (Đời ${m.generation})`
+                        : "Chọn thành viên gốc";
+                    })()
+                  : "Chọn thành viên gốc"}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-75 p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Tìm kiếm thành viên..." />
+                <CommandList>
+                  <CommandEmpty>Không tìm thấy thành viên nào.</CommandEmpty>
+                  <CommandGroup>
+                    {members.map((member) => (
+                      <CommandItem
+                        key={member.id}
+                        value={`${member.name} ${member.generation} ${member.id}`}
+                        onSelect={() => {
+                          setSelectedRootId(member.id);
+                          setOpenSearch(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedRootId === member.id
+                              ? "opacity-100"
+                              : "opacity-0",
+                          )}
+                        />
+                        {member.name} (Đời {member.generation})
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
-      {/* Canvas */}
+      {/* React Flow canvas */}
       <div
-        ref={containerRef}
         className="w-full overflow-hidden rounded-2xl relative border border-gray-200 shadow-sm"
-        style={{
-          height: "calc(100vh - 200px)",
-          background:
-            "radial-gradient(circle at 50% 50%, rgba(251,191,36,0.04) 0%, transparent 70%), #fafafa",
-          cursor: dragging ? "grabbing" : "grab",
-        }}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
-        onMouseLeave={onMouseUp}
+        style={{ height: "calc(100vh - 200px)" }}
       >
-        <div
-          className="inline-flex items-center px-16 py-14 min-h-full origin-top-left"
-          style={{
-            transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-          }}
-        >
-          {loading ? (
-            <div className="flex items-center justify-center min-h-75 text-lg text-gray-400">
-              <p>Đang tải cây gia phả...</p>
-            </div>
-          ) : error ? (
-            <div className="flex items-center justify-center min-h-75 text-lg text-red-500 text-center">
-              <p>{error}</p>
-            </div>
-          ) : rootMembers.length > 0 ? (
-            <ul className="list-none flex flex-col gap-0">
-              {rootMembers.map((root) => (
-                <HorizontalTreeNode
-                  key={root.id}
-                  member={root}
-                  getChildren={getChildren}
-                  getSpouse={getSpouse}
-                />
-              ))}
-            </ul>
-          ) : (
-            <div className="flex items-center justify-center min-h-75 text-lg text-gray-400">
-              <p>Chưa có thành viên nào. Hãy thêm thành viên đầu tiên!</p>
-            </div>
-          )}
-        </div>
+        {loading ? (
+          <div className="flex items-center justify-center h-full text-lg text-gray-400">
+            Đang tải cây gia phả...
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center h-full text-lg text-red-500 text-center">
+            {error}
+          </div>
+        ) : rootMembers.length === 0 ? (
+          <div className="flex items-center justify-center h-full text-lg text-gray-400">
+            Chưa có thành viên nào. Hãy thêm thành viên đầu tiên!
+          </div>
+        ) : (
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            nodeTypes={nodeTypes}
+            fitView
+            fitViewOptions={{ padding: 0.3 }}
+            minZoom={0.1}
+            maxZoom={2}
+            proOptions={{ hideAttribution: true }}
+          >
+            <Background
+              variant={BackgroundVariant.Dots}
+              gap={20}
+              size={1}
+              color="#d1d5db"
+            />
+            <Controls showInteractive={false} />
+            <MiniMap
+              nodeColor={(n) => {
+                const data = n.data as { member?: { gender?: string } };
+                return data?.member?.gender === "male" ? "#93c5fd" : "#f9a8d4";
+              }}
+            />
+          </ReactFlow>
+        )}
       </div>
     </div>
   );
