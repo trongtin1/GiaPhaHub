@@ -29,7 +29,7 @@ import {
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import { useFamilyTree } from "@/pages/FamilyTree/useFamilyTree";
 import { useTreeLayout } from "./useTreeLayout";
-import FamilyNode from "./components/FamilyNode";
+import FamilyNode from "../components/FamilyNode";
 
 const nodeTypes = { familyNode: FamilyNode };
 const emptyNodes: Node[] = [];
@@ -37,6 +37,17 @@ const emptyEdges: Edge[] = [];
 
 export default function FamilyTree() {
   const [openSearch, setOpenSearch] = useState(false);
+  const [collapsedIds, setCollapsedIds] = useState<Set<number>>(new Set());
+
+  const toggleCollapse = (id: number) => {
+    setCollapsedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   const {
     members,
     selectedRootId,
@@ -52,6 +63,8 @@ export default function FamilyTree() {
     rootMembers,
     getChildren,
     getSpouse,
+    collapsedIds,
+    toggleCollapse,
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState(emptyNodes);

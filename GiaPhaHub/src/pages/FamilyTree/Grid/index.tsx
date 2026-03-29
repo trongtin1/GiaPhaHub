@@ -6,17 +6,7 @@ import {
   Check,
   ChevronsUpDown,
 } from "lucide-react";
-import {
-  ReactFlow,
-  Controls,
-  MiniMap,
-  Background,
-  BackgroundVariant,
-  useNodesState,
-  useEdgesState,
-} from "@xyflow/react";
-import type { Node, Edge } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
+
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
@@ -52,15 +42,13 @@ import { useFamily } from "@/context/useFamily";
 import MemberForm from "@/components/MemberForm";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import GenerationGrid from "@/pages/FamilyTree/Grid/Vertical";
-import FamilyNode from "@/pages/FamilyTree/Tree/components/FamilyNode";
-import { useHorizontalTreeLayout } from "@/pages/FamilyTree/Grid/Horizontal/useHorizontalTreeLayout";
+
 import { paths } from "@/router/paths";
 import type { FamilyMemberResponse } from "@/models/FamilyMember";
 import { useFamilyTree } from "@/pages/FamilyTree/useFamilyTree";
+import HorizontalFamilyTree from "./Horizontal";
 
-const nodeTypes = { familyNode: FamilyNode };
-const emptyNodes: Node[] = [];
-const emptyEdges: Edge[] = [];
+
 
 export default function FamilyGrid() {
   const { members, deleteMember, loadMembers } = useFamily();
@@ -90,19 +78,7 @@ export default function FamilyGrid() {
     useState<FamilyMemberResponse | null>(null);
   const [openSearch, setOpenSearch] = useState(false);
 
-  const { nodes: layoutNodes, edges: layoutEdges } = useHorizontalTreeLayout(
-    treeRootMembers,
-    getTreeChildren,
-    getTreeSpouse,
-  );
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(emptyNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(emptyEdges);
-
-  useEffect(() => {
-    setNodes(layoutNodes);
-    setEdges(layoutEdges);
-  }, [layoutNodes, layoutEdges, setNodes, setEdges]);
 
   const generations = [...new Set(members.map((m) => m.generation))].sort(
     (a, b) => a - b,
@@ -335,32 +311,11 @@ export default function FamilyGrid() {
               Chưa có thành viên nào. Hãy thêm thành viên đầu tiên!
             </div>
           ) : (
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              nodeTypes={nodeTypes}
-              fitView
-              fitViewOptions={{ padding: 0.3 }}
-              minZoom={0.1}
-              maxZoom={2}
-              proOptions={{ hideAttribution: true }}
-            >
-              <Background
-                variant={BackgroundVariant.Dots}
-                gap={20}
-                size={1}
-                color="#d1d5db"
-              />
-              <Controls showInteractive={false} />
-              <MiniMap
-                nodeColor={(n) => {
-                  const data = n.data as { member?: { gender?: string } };
-                  return data?.member?.gender === "male" ? "#93c5fd" : "#f9a8d4";
-                }}
-              />
-            </ReactFlow>
+            <HorizontalFamilyTree
+              rootMembers={treeRootMembers}
+              getChildren={getTreeChildren}
+              getSpouse={getTreeSpouse}
+            />
           )}
         </div>
       )}

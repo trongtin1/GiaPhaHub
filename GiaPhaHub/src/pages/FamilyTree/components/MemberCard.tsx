@@ -13,12 +13,14 @@ export function MemberCard({
   return (
     <div
       className={`
-        flex flex-col items-center gap-1.5 p-3.5 px-4.5 min-w-30
-        text-center rounded-xl cursor-pointer transition-all duration-250
-        bg-white hover:-translate-y-0.5 shadow-sm
-        border-2 ${isMale ? "border-blue-200 hover:border-blue-400 hover:shadow-blue-500/10" : "border-pink-200 hover:border-pink-400 hover:shadow-pink-500/10"}
-        ${member.deathDate ? "opacity-60" : ""}
-      `}
+    flex flex-col items-center justify-between
+    w-32 h-28   // 👈 FIX kích thước
+    gap-1.5 p-3
+    text-center rounded-xl cursor-pointer transition-all duration-250
+    bg-white hover:-translate-y-0.5 shadow-sm
+    border-2 ${isMale ? "border-blue-200 hover:border-blue-400 hover:shadow-blue-500/10" : "border-pink-200 hover:border-pink-400 hover:shadow-pink-500/10"}
+    ${member.deathDate ? "opacity-60" : ""}
+  `}
       onClick={(e) => {
         e.stopPropagation();
         onClick();

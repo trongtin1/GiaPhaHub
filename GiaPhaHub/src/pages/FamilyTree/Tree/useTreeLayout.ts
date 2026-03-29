@@ -15,6 +15,9 @@ const EDGE_STYLE = { stroke: "#9ca3af", strokeWidth: 2, strokeDasharray: "6 4" }
 export interface TreeNodeData {
   member: FamilyMemberResponse;
   spouse?: FamilyMemberResponse;
+  hasChildren?: boolean;
+  isCollapsed?: boolean;
+  onToggleCollapse?: (id: number) => void;
   [key: string]: unknown;
 }
 
@@ -22,12 +25,17 @@ type GetChildren = (m: FamilyMemberResponse) => FamilyMemberResponse[];
 type GetSpouse = (m: FamilyMemberResponse) => FamilyMemberResponse | undefined;
 
 /* ── Helpers ──────────────────────────────────────────────── */
-function getSubtreeWidth(member: FamilyMemberResponse, getChildren: GetChildren, getSpouse: GetSpouse): number {
+function getSubtreeWidth(
+  member: FamilyMemberResponse,
+  getChildren: GetChildren,
+  getSpouse: GetSpouse,
+  collapsedIds: Set<number>,
+): number {
   const selfW = getSpouse(member) ? COUPLE_W : NODE_W;
   const children = getChildren(member);
-  if (children.length === 0) return selfW;
+  if (children.length === 0 || collapsedIds.has(member.id)) return selfW;
 
-  const childrenW = children.reduce((sum, c) => sum + getSubtreeWidth(c, getChildren, getSpouse), 0);
+  const childrenW = children.reduce((sum, c) => sum + getSubtreeWidth(c, getChildren, getSpouse, collapsedIds), 0);
   return Math.max(selfW, childrenW + (children.length - 1) * GAP_X);
 }
 
@@ -37,30 +45,37 @@ function buildNodes(
   cy: number,
   getChildren: GetChildren,
   getSpouse: GetSpouse,
+  collapsedIds: Set<number>,
+  onToggleCollapse: (id: number) => void,
   nodes: Node[],
   edges: Edge[],
 ) {
   const nodeId = `n-${member.id}`;
   const spouse = getSpouse(member);
 
+  const allChildren = getChildren(member);
+  const hasChildren = allChildren.length > 0;
+  const isCollapsed = collapsedIds.has(member.id);
+
   nodes.push({
     id: nodeId,
     type: "familyNode",
     position: { x: cx - (spouse ? COUPLE_W : NODE_W) / 2, y: cy },
-    data: { member, spouse } satisfies TreeNodeData,
+    data: { member, spouse, hasChildren, isCollapsed, onToggleCollapse } satisfies TreeNodeData,
   });
 
-  const children = getChildren(member);
-  if (children.length === 0) return;
+  if (!hasChildren || isCollapsed) return;
 
-  const widths = children.map((c) => getSubtreeWidth(c, getChildren, getSpouse));
+  const children = allChildren;
+
+  const widths = children.map((c) => getSubtreeWidth(c, getChildren, getSpouse, collapsedIds));
   const totalW = widths.reduce((s, w) => s + w, 0) + (children.length - 1) * GAP_X;
   let x = cx - totalW / 2;
   const childY = cy + NODE_H + GAP_Y;
 
   children.forEach((child, i) => {
     const childCx = x + widths[i] / 2;
-    buildNodes(child, childCx, childY, getChildren, getSpouse, nodes, edges);
+    buildNodes(child, childCx, childY, getChildren, getSpouse, collapsedIds, onToggleCollapse, nodes, edges);
     edges.push({
       id: `e-${member.id}-${child.id}`,
       source: nodeId,
@@ -77,21 +92,23 @@ export function useTreeLayout(
   roots: FamilyMemberResponse[],
   getChildren: GetChildren,
   getSpouse: GetSpouse,
+  collapsedIds: Set<number>,
+  onToggleCollapse: (id: number) => void,
 ) {
   return useMemo(() => {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
     if (roots.length === 0) return { nodes, edges };
 
-    const widths = roots.map((r) => getSubtreeWidth(r, getChildren, getSpouse));
+    const widths = roots.map((r) => getSubtreeWidth(r, getChildren, getSpouse, collapsedIds));
     const totalW = widths.reduce((s, w) => s + w, 0) + (roots.length - 1) * GAP_X * 2;
     let x = -totalW / 2;
 
     roots.forEach((root, i) => {
-      buildNodes(root, x + widths[i] / 2, 0, getChildren, getSpouse, nodes, edges);
+      buildNodes(root, x + widths[i] / 2, 0, getChildren, getSpouse, collapsedIds, onToggleCollapse, nodes, edges);
       x += widths[i] + GAP_X * 2;
     });
 
     return { nodes, edges };
-  }, [roots, getChildren, getSpouse]);
+  }, [roots, getChildren, getSpouse, collapsedIds, onToggleCollapse]);
 }
