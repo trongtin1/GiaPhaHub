@@ -9,7 +9,11 @@ const NODE_H = 110;
 const GAP_X = 40;
 const GAP_Y = 160;
 
-const EDGE_STYLE = { stroke: "#9ca3af", strokeWidth: 2, strokeDasharray: "6 4" };
+const EDGE_STYLE = {
+  stroke: "#9ca3af",
+  strokeWidth: 2,
+  strokeDasharray: "6 4",
+};
 
 /* ── Types ────────────────────────────────────────────────── */
 export interface TreeNodeData {
@@ -35,7 +39,10 @@ function getSubtreeWidth(
   const children = getChildren(member);
   if (children.length === 0 || collapsedIds.has(member.id)) return selfW;
 
-  const childrenW = children.reduce((sum, c) => sum + getSubtreeWidth(c, getChildren, getSpouse, collapsedIds), 0);
+  const childrenW = children.reduce(
+    (sum, c) => sum + getSubtreeWidth(c, getChildren, getSpouse, collapsedIds),
+    0,
+  );
   return Math.max(selfW, childrenW + (children.length - 1) * GAP_X);
 }
 
@@ -61,21 +68,40 @@ function buildNodes(
     id: nodeId,
     type: "familyNode",
     position: { x: cx - (spouse ? COUPLE_W : NODE_W) / 2, y: cy },
-    data: { member, spouse, hasChildren, isCollapsed, onToggleCollapse } satisfies TreeNodeData,
+    data: {
+      member,
+      spouse,
+      hasChildren,
+      isCollapsed,
+      onToggleCollapse,
+    } satisfies TreeNodeData,
   });
 
   if (!hasChildren || isCollapsed) return;
 
   const children = allChildren;
 
-  const widths = children.map((c) => getSubtreeWidth(c, getChildren, getSpouse, collapsedIds));
-  const totalW = widths.reduce((s, w) => s + w, 0) + (children.length - 1) * GAP_X;
+  const widths = children.map((c) =>
+    getSubtreeWidth(c, getChildren, getSpouse, collapsedIds),
+  );
+  const totalW =
+    widths.reduce((s, w) => s + w, 0) + (children.length - 1) * GAP_X;
   let x = cx - totalW / 2;
   const childY = cy + NODE_H + GAP_Y;
 
   children.forEach((child, i) => {
     const childCx = x + widths[i] / 2;
-    buildNodes(child, childCx, childY, getChildren, getSpouse, collapsedIds, onToggleCollapse, nodes, edges);
+    buildNodes(
+      child,
+      childCx,
+      childY,
+      getChildren,
+      getSpouse,
+      collapsedIds,
+      onToggleCollapse,
+      nodes,
+      edges,
+    );
     edges.push({
       id: `e-${member.id}-${child.id}`,
       source: nodeId,
@@ -100,12 +126,25 @@ export function useTreeLayout(
     const edges: Edge[] = [];
     if (roots.length === 0) return { nodes, edges };
 
-    const widths = roots.map((r) => getSubtreeWidth(r, getChildren, getSpouse, collapsedIds));
-    const totalW = widths.reduce((s, w) => s + w, 0) + (roots.length - 1) * GAP_X * 2;
+    const widths = roots.map((r) =>
+      getSubtreeWidth(r, getChildren, getSpouse, collapsedIds),
+    );
+    const totalW =
+      widths.reduce((s, w) => s + w, 0) + (roots.length - 1) * GAP_X * 2;
     let x = -totalW / 2;
 
     roots.forEach((root, i) => {
-      buildNodes(root, x + widths[i] / 2, 0, getChildren, getSpouse, collapsedIds, onToggleCollapse, nodes, edges);
+      buildNodes(
+        root,
+        x + widths[i] / 2,
+        0,
+        getChildren,
+        getSpouse,
+        collapsedIds,
+        onToggleCollapse,
+        nodes,
+        edges,
+      );
       x += widths[i] + GAP_X * 2;
     });
 

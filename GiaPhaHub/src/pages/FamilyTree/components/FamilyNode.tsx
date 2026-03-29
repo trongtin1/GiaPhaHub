@@ -17,7 +17,13 @@ export default function FamilyNode({ data }: NodeProps) {
     hasChildren,
     isCollapsed,
     onToggleCollapse,
-  } = data as TreeNodeData & { direction?: "horizontal" };
+    showHandles = true,
+    showCollapseToggle = true,
+  } = data as TreeNodeData & {
+    direction?: "horizontal";
+    showHandles?: boolean;
+    showCollapseToggle?: boolean;
+  };
   const navigate = useNavigate();
   const familyId = useFamilyId();
   const isHorizontal = direction === "horizontal";
@@ -26,11 +32,13 @@ export default function FamilyNode({ data }: NodeProps) {
 
   return (
     <div className="flex items-center relative">
-      <Handle
-        type="target"
-        position={isHorizontal ? Position.Left : Position.Top}
-        className={handleStyle}
-      />
+      {showHandles && (
+        <Handle
+          type="target"
+          position={isHorizontal ? Position.Left : Position.Top}
+          className={handleStyle}
+        />
+      )}
 
       <MemberCard member={member} onClick={() => goTo(member.id)} />
 
@@ -41,13 +49,15 @@ export default function FamilyNode({ data }: NodeProps) {
         </>
       )}
 
-      <Handle
-        type="source"
-        position={isHorizontal ? Position.Right : Position.Bottom}
-        className={handleStyle}
-      />
+      {showHandles && (
+        <Handle
+          type="source"
+          position={isHorizontal ? Position.Right : Position.Bottom}
+          className={handleStyle}
+        />
+      )}
 
-      {hasChildren && (
+      {showCollapseToggle && hasChildren && (
         <button
           onClick={(e) => {
             e.stopPropagation();

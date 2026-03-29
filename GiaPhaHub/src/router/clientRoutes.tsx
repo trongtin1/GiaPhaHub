@@ -10,7 +10,7 @@ const LoginPage = lazy(() => import("@/pages/Auth/Login"));
 const RegisterPage = lazy(() => import("@/pages/Auth/Register"));
 const Members = lazy(() => import("@/pages/Member"));
 const FamilyTree = lazy(() => import("@/pages/FamilyTree/Tree"));
-const FamilyGrid = lazy(() => import("@/pages/FamilyTree/Grid"));
+const FamilyGrid = lazy(() => import("@/pages/FamilyTree/Grid/Vertical"));
 const HorizontalFamilyTree = lazy(
   () => import("@/pages/FamilyTree/Grid/Horizontal"),
 );

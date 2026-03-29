@@ -10,17 +10,28 @@ const NODE_H = 110;
 const GAP_X = 200; // horizontal gap between generations
 const GAP_Y = 40; // vertical gap between siblings
 
-const EDGE_STYLE = { stroke: "#9ca3af", strokeWidth: 2, strokeDasharray: "6 4" };
+const EDGE_STYLE = {
+  stroke: "#9ca3af",
+  strokeWidth: 2,
+  strokeDasharray: "6 4",
+};
 
 type GetChildren = (m: FamilyMemberResponse) => FamilyMemberResponse[];
 type GetSpouse = (m: FamilyMemberResponse) => FamilyMemberResponse | undefined;
 
 /* ── Helpers ──────────────────────────────────────────────── */
-function getSubtreeHeight(member: FamilyMemberResponse, getChildren: GetChildren, collapsedIds: Set<number>): number {
+function getSubtreeHeight(
+  member: FamilyMemberResponse,
+  getChildren: GetChildren,
+  collapsedIds: Set<number>,
+): number {
   const children = getChildren(member);
   if (children.length === 0 || collapsedIds.has(member.id)) return NODE_H;
 
-  const childrenH = children.reduce((sum, c) => sum + getSubtreeHeight(c, getChildren, collapsedIds), 0);
+  const childrenH = children.reduce(
+    (sum, c) => sum + getSubtreeHeight(c, getChildren, collapsedIds),
+    0,
+  );
   return Math.max(NODE_H, childrenH + (children.length - 1) * GAP_Y);
 }
 
@@ -46,22 +57,42 @@ function buildNodes(
     id: nodeId,
     type: "familyNode",
     position: { x: cx, y: cy - NODE_H / 2 },
-    data: { member, spouse, direction: "horizontal", hasChildren, isCollapsed, onToggleCollapse } satisfies TreeNodeData & { direction: string },
+    data: {
+      member,
+      spouse,
+      direction: "horizontal",
+      hasChildren,
+      isCollapsed,
+      onToggleCollapse,
+    } satisfies TreeNodeData & { direction: string },
   });
 
   if (!hasChildren || isCollapsed) return;
-  
+
   const children = allChildren;
 
   const selfW = spouse ? COUPLE_W : NODE_W;
   const childX = cx + selfW + GAP_X;
-  const heights = children.map((c) => getSubtreeHeight(c, getChildren, collapsedIds));
-  const totalH = heights.reduce((s, h) => s + h, 0) + (children.length - 1) * GAP_Y;
+  const heights = children.map((c) =>
+    getSubtreeHeight(c, getChildren, collapsedIds),
+  );
+  const totalH =
+    heights.reduce((s, h) => s + h, 0) + (children.length - 1) * GAP_Y;
   let y = cy - totalH / 2;
 
   children.forEach((child, i) => {
     const childCy = y + heights[i] / 2;
-    buildNodes(child, childX, childCy, getChildren, getSpouse, collapsedIds, onToggleCollapse, nodes, edges);
+    buildNodes(
+      child,
+      childX,
+      childCy,
+      getChildren,
+      getSpouse,
+      collapsedIds,
+      onToggleCollapse,
+      nodes,
+      edges,
+    );
     edges.push({
       id: `e-${member.id}-${child.id}`,
       source: nodeId,
@@ -88,12 +119,25 @@ export function useHorizontalTreeLayout(
     const edges: Edge[] = [];
     if (roots.length === 0) return { nodes, edges };
 
-    const heights = roots.map((r) => getSubtreeHeight(r, getChildren, collapsedIds));
-    const totalH = heights.reduce((s, h) => s + h, 0) + (roots.length - 1) * GAP_Y * 2;
+    const heights = roots.map((r) =>
+      getSubtreeHeight(r, getChildren, collapsedIds),
+    );
+    const totalH =
+      heights.reduce((s, h) => s + h, 0) + (roots.length - 1) * GAP_Y * 2;
     let y = -totalH / 2;
 
     roots.forEach((root, i) => {
-      buildNodes(root, 0, y + heights[i] / 2, getChildren, getSpouse, collapsedIds, onToggleCollapse, nodes, edges);
+      buildNodes(
+        root,
+        0,
+        y + heights[i] / 2,
+        getChildren,
+        getSpouse,
+        collapsedIds,
+        onToggleCollapse,
+        nodes,
+        edges,
+      );
       y += heights[i] + GAP_Y * 2;
     });
 
