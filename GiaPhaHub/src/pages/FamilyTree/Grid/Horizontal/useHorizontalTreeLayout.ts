@@ -1,7 +1,10 @@
 import { useMemo } from "react";
 import type { Node, Edge } from "@xyflow/react";
 import type { FamilyMemberResponse } from "@/models/FamilyMember";
-import type { TreeNodeData } from "@/pages/FamilyTree/Tree/useTreeLayout";
+import type {
+  TreeLayoutOptions,
+  TreeNodeData,
+} from "@/pages/FamilyTree/Tree/useTreeLayout";
 
 /* ── Constants (horizontal: X = depth, Y = siblings) ──────── */
 const NODE_W = 140;
@@ -41,6 +44,7 @@ function buildNodes(
   cy: number,
   getChildren: GetChildren,
   getSpouse: GetSpouse,
+  layoutOptions: Required<TreeLayoutOptions>,
   collapsedIds: Set<number>,
   onToggleCollapse: (id: number) => void,
   nodes: Node[],
@@ -64,6 +68,8 @@ function buildNodes(
       hasChildren,
       isCollapsed,
       onToggleCollapse,
+      showHandles: layoutOptions.showHandles,
+      showCollapseToggle: layoutOptions.showCollapseToggle,
     } satisfies TreeNodeData & { direction: string },
   });
 
@@ -88,6 +94,7 @@ function buildNodes(
       childCy,
       getChildren,
       getSpouse,
+      layoutOptions,
       collapsedIds,
       onToggleCollapse,
       nodes,
@@ -113,11 +120,20 @@ export function useHorizontalTreeLayout(
   getSpouse: GetSpouse,
   collapsedIds: Set<number>,
   onToggleCollapse: (id: number) => void,
+  options: TreeLayoutOptions = {},
 ) {
+  const showHandles = options.showHandles ?? true;
+  const showCollapseToggle = options.showCollapseToggle ?? true;
+
   return useMemo(() => {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
     if (roots.length === 0) return { nodes, edges };
+
+    const layoutOptions: Required<TreeLayoutOptions> = {
+      showHandles,
+      showCollapseToggle,
+    };
 
     const heights = roots.map((r) =>
       getSubtreeHeight(r, getChildren, collapsedIds),
@@ -133,6 +149,7 @@ export function useHorizontalTreeLayout(
         y + heights[i] / 2,
         getChildren,
         getSpouse,
+        layoutOptions,
         collapsedIds,
         onToggleCollapse,
         nodes,
@@ -142,5 +159,13 @@ export function useHorizontalTreeLayout(
     });
 
     return { nodes, edges };
-  }, [roots, getChildren, getSpouse, collapsedIds, onToggleCollapse]);
+  }, [
+    roots,
+    getChildren,
+    getSpouse,
+    collapsedIds,
+    onToggleCollapse,
+    showCollapseToggle,
+    showHandles,
+  ]);
 }

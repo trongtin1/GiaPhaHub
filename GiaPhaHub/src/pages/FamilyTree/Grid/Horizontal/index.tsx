@@ -8,8 +8,14 @@ import {
 } from "@xyflow/react";
 import type { Node, Edge, ReactFlowInstance } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import DiagramHeader from "@/pages/FamilyTree/components/DiagramHeader";
+import {
+  DEFAULT_DIAGRAM_FILTERS,
+  type DiagramFilters,
+  toFamilyTreeDataFilters,
+  toTreeLayoutOptions,
+} from "@/pages/FamilyTree/diagramFilters";
 import { useFamilyTree } from "@/pages/FamilyTree/useFamilyTree";
 import { useHorizontalTreeLayout } from "./useHorizontalTreeLayout";
 import FamilyNode from "@/pages/FamilyTree/components/FamilyNode";
@@ -25,8 +31,19 @@ export default function HorizontalFamilyTreePage() {
     Edge
   > | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [showMiniMap, setShowMiniMap] = useState(false);
-  const [showBackground, setShowBackground] = useState(true);
+  const [filters, setFilters] = useState<DiagramFilters>(() => ({
+    ...DEFAULT_DIAGRAM_FILTERS,
+  }));
+
+  const onFilterChange = useCallback(
+    <K extends keyof DiagramFilters>(key: K, value: DiagramFilters[K]) => {
+      setFilters((prev) => ({
+        ...prev,
+        [key]: value,
+      }));
+    },
+    [],
+  );
 
   const toggleCollapse = (id: number) => {
     setCollapsedIds((prev) => {
@@ -46,7 +63,7 @@ export default function HorizontalFamilyTreePage() {
     getSpouse,
     loading,
     error,
-  } = useFamilyTree();
+  } = useFamilyTree(toFamilyTreeDataFilters(filters));
 
   const { nodes: layoutNodes, edges: layoutEdges } = useHorizontalTreeLayout(
     rootMembers,
@@ -54,6 +71,7 @@ export default function HorizontalFamilyTreePage() {
     getSpouse,
     collapsedIds,
     toggleCollapse,
+    toTreeLayoutOptions(filters),
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState(emptyNodes);
@@ -90,10 +108,8 @@ export default function HorizontalFamilyTreePage() {
             onZoomOut: handleZoomOut,
             onZoomIn: handleZoomIn,
             onCenterView: handleCenterView,
-            showMiniMap,
-            setShowMiniMap,
-            showBackground,
-            setShowBackground,
+            filters,
+            onFilterChange,
             onRootChanged: () => {
               reactFlowInstance?.fitView({
                 padding: 0.3,
@@ -139,7 +155,7 @@ export default function HorizontalFamilyTreePage() {
               maxZoom={2}
               proOptions={{ hideAttribution: true }}
             >
-              {showBackground && (
+              {filters.showBackground && !filters.minimalMode && (
                 <Background
                   variant={BackgroundVariant.Dots}
                   gap={20}
@@ -147,7 +163,7 @@ export default function HorizontalFamilyTreePage() {
                   color="#d1d5db"
                 />
               )}
-              {showMiniMap && (
+              {filters.showMiniMap && !filters.minimalMode && (
                 <MiniMap
                   nodeColor={(n) => {
                     const data = n.data as { member?: { gender?: string } };

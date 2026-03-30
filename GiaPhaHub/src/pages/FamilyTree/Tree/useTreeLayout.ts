@@ -22,7 +22,14 @@ export interface TreeNodeData {
   hasChildren?: boolean;
   isCollapsed?: boolean;
   onToggleCollapse?: (id: number) => void;
+  showHandles?: boolean;
+  showCollapseToggle?: boolean;
   [key: string]: unknown;
+}
+
+export interface TreeLayoutOptions {
+  showHandles?: boolean;
+  showCollapseToggle?: boolean;
 }
 
 type GetChildren = (m: FamilyMemberResponse) => FamilyMemberResponse[];
@@ -52,6 +59,7 @@ function buildNodes(
   cy: number,
   getChildren: GetChildren,
   getSpouse: GetSpouse,
+  layoutOptions: Required<TreeLayoutOptions>,
   collapsedIds: Set<number>,
   onToggleCollapse: (id: number) => void,
   nodes: Node[],
@@ -74,6 +82,8 @@ function buildNodes(
       hasChildren,
       isCollapsed,
       onToggleCollapse,
+      showHandles: layoutOptions.showHandles,
+      showCollapseToggle: layoutOptions.showCollapseToggle,
     } satisfies TreeNodeData,
   });
 
@@ -97,6 +107,7 @@ function buildNodes(
       childY,
       getChildren,
       getSpouse,
+      layoutOptions,
       collapsedIds,
       onToggleCollapse,
       nodes,
@@ -120,11 +131,20 @@ export function useTreeLayout(
   getSpouse: GetSpouse,
   collapsedIds: Set<number>,
   onToggleCollapse: (id: number) => void,
+  options: TreeLayoutOptions = {},
 ) {
+  const showHandles = options.showHandles ?? true;
+  const showCollapseToggle = options.showCollapseToggle ?? true;
+
   return useMemo(() => {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
     if (roots.length === 0) return { nodes, edges };
+
+    const layoutOptions: Required<TreeLayoutOptions> = {
+      showHandles,
+      showCollapseToggle,
+    };
 
     const widths = roots.map((r) =>
       getSubtreeWidth(r, getChildren, getSpouse, collapsedIds),
@@ -140,6 +160,7 @@ export function useTreeLayout(
         0,
         getChildren,
         getSpouse,
+        layoutOptions,
         collapsedIds,
         onToggleCollapse,
         nodes,
@@ -149,5 +170,13 @@ export function useTreeLayout(
     });
 
     return { nodes, edges };
-  }, [roots, getChildren, getSpouse, collapsedIds, onToggleCollapse]);
+  }, [
+    roots,
+    getChildren,
+    getSpouse,
+    collapsedIds,
+    onToggleCollapse,
+    showCollapseToggle,
+    showHandles,
+  ]);
 }

@@ -31,11 +31,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import { useFamilyId } from "@/hooks/useFamilyId";
 import { cn } from "@/lib/utils";
 import type { FamilyMemberResponse } from "@/models/FamilyMember";
+import type { DiagramFilters } from "@/pages/FamilyTree/diagramFilters";
 import { paths } from "@/router/paths";
+import { DATA_FILTER_ITEMS, DISPLAY_FILTER_ITEMS } from "@/constants/filter";
 
 interface DiagramHeaderControls {
   members: FamilyMemberResponse[];
@@ -45,10 +48,11 @@ interface DiagramHeaderControls {
   onZoomOut: () => void;
   onZoomIn: () => void;
   onCenterView: () => void;
-  showMiniMap: boolean;
-  setShowMiniMap: (value: boolean) => void;
-  showBackground: boolean;
-  setShowBackground: (value: boolean) => void;
+  filters: DiagramFilters;
+  onFilterChange: <K extends keyof DiagramFilters>(
+    key: K,
+    value: DiagramFilters[K],
+  ) => void;
   onRootChanged?: (id: number) => void;
 }
 
@@ -233,25 +237,63 @@ export default function DiagramHeader({
                   Hiển thị
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Tùy chọn hiển thị</DropdownMenuLabel>
+              <DropdownMenuContent align="end" className="w-60">
+                <DropdownMenuLabel className="text-xs font-semibold tracking-wide text-gray-500">
+                  HIỂN THỊ
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuCheckboxItem
-                  checked={controls.showMiniMap}
-                  onCheckedChange={(checked) => {
-                    controls.setShowMiniMap(checked === true);
-                  }}
-                >
-                  Hiện bản đồ thu nhỏ
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={controls.showBackground}
-                  onCheckedChange={(checked) => {
-                    controls.setShowBackground(checked === true);
-                  }}
-                >
-                  Hiện nền chấm
-                </DropdownMenuCheckboxItem>
+                {DISPLAY_FILTER_ITEMS.map((item) => (
+                  <DropdownMenuCheckboxItem
+                    key={item.key}
+                    checked={controls.filters[item.key]}
+                    onCheckedChange={(checked) => {
+                      controls.onFilterChange(item.key, checked === true);
+                    }}
+                  >
+                    {item.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+
+                <div className="px-2 py-1.5">
+                  <div className="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 text-sm text-gray-700">
+                    <span className="font-medium">Số thế hệ</span>
+                    <Input
+                      type="number"
+                      min={1}
+                      placeholder="Tất cả"
+                      value={controls.filters.generationLimit === null ? "" : controls.filters.generationLimit}
+                      onChange={(event) => {
+                        if (event.target.value === "") {
+                          controls.onFilterChange("generationLimit", null);
+                          return;
+                        }
+                        const parsed = Number.parseInt(event.target.value, 10);
+                        if (!Number.isFinite(parsed)) return;
+                        const next = Math.max(1, parsed);
+                        controls.onFilterChange("generationLimit", next);
+                      }}
+                      onKeyDown={(event) => event.stopPropagation()}
+                      className="h-9 w-18 text-center placeholder:text-[11px]"
+                    />
+                  </div>
+                </div>
+
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-xs font-semibold tracking-wide text-gray-500">
+                  LỌC DỮ LIỆU
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {DATA_FILTER_ITEMS.map((item) => (
+                  <DropdownMenuCheckboxItem
+                    key={item.key}
+                    checked={controls.filters[item.key]}
+                    onCheckedChange={(checked) => {
+                      controls.onFilterChange(item.key, checked === true);
+                    }}
+                  >
+                    {item.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

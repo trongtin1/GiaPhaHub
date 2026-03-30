@@ -16,6 +16,16 @@ export interface FamilyTreeState {
   getSpouse: (member: FamilyMemberResponse) => FamilyMemberResponse | undefined;
 }
 
+export interface UseFamilyTreeOptions {
+  generationLimit?: number;
+  hideDau?: boolean;
+  hideRe?: boolean;
+  hideDaughters?: boolean;
+  hideSons?: boolean;
+  hideMale?: boolean;
+  hideFemale?: boolean;
+}
+
 function normalizeMembersMap(
   root: FamilyMemberResponse,
 ): Map<number, FamilyMemberResponse> {
@@ -30,10 +40,14 @@ function normalizeMembersMap(
   return map;
 }
 
-export function useFamilyTree(): FamilyTreeState {
+export function useFamilyTree(
+  options: UseFamilyTreeOptions = {},
+): FamilyTreeState {
   const familyId = useFamilyId();
   const [root, setRoot] = useState<FamilyMemberResponse | null>(null);
-  const [selectedRootId, setSelectedRootIdState] = useState<number | null>(null);
+  const [selectedRootId, setSelectedRootIdState] = useState<number | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -76,11 +90,16 @@ export function useFamilyTree(): FamilyTreeState {
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [selectedRootId]);
 
   const memberMap = useMemo(
-    () => (root ? normalizeMembersMap(root) : new Map<number, FamilyMemberResponse>()),
+    () =>
+      root
+        ? normalizeMembersMap(root)
+        : new Map<number, FamilyMemberResponse>(),
     [root],
   );
 
@@ -94,25 +113,109 @@ export function useFamilyTree(): FamilyTreeState {
 
   const rootMembers = useMemo(() => (root ? [root] : []), [root]);
 
+  const normalizedGenerationLimit = useMemo(() => {
+    if (!Number.isFinite(options.generationLimit))
+      return Number.MAX_SAFE_INTEGER;
+    return Math.max(1, Math.floor(options.generationLimit ?? 0));
+  }, [options.generationLimit]);
+
+  const depthByMemberId = useMemo(() => {
+    const depthMap = new Map<number, number>();
+    if (!root) return depthMap;
+
+    const queue: Array<{ id: number; depth: number }> = [
+      { id: root.id, depth: 1 },
+    ];
+    depthMap.set(root.id, 1);
+
+    while (queue.length > 0) {
+      const current = queue.shift();
+      if (!current) continue;
+
+      const member = memberMap.get(current.id);
+      if (!member) continue;
+
+      for (const childId of member.children ?? []) {
+        if (!memberMap.has(childId)) continue;
+        const nextDepth = current.depth + 1;
+        const knownDepth = depthMap.get(childId);
+
+        if (knownDepth === undefined || nextDepth < knownDepth) {
+          depthMap.set(childId, nextDepth);
+          queue.push({ id: childId, depth: nextDepth });
+        }
+      }
+    }
+
+    return depthMap;
+  }, [memberMap, root]);
+
   const getMemberById = useCallback(
     (id: number) => memberMap.get(id),
     [memberMap],
   );
 
+  const shouldHideSpouse = useCallback(
+    (member: FamilyMemberResponse) => {
+      const isMale = member.gender === "male";
+      const isFemale = member.gender === "female";
+
+      if (options.hideMale && isMale) return true;
+      if (options.hideFemale && isFemale) return true;
+      if (options.hideDau && isFemale) return true;
+      if (options.hideRe && isMale) return true;
+
+      return false;
+    },
+    [options.hideDau, options.hideFemale, options.hideMale, options.hideRe],
+  );
+
+  const shouldHideChild = useCallback(
+    (member: FamilyMemberResponse) => {
+      const isMale = member.gender === "male";
+      const isFemale = member.gender === "female";
+
+      if (options.hideMale && isMale) return true;
+      if (options.hideFemale && isFemale) return true;
+      if (options.hideSons && isMale) return true;
+      if (options.hideDaughters && isFemale) return true;
+
+      return false;
+    },
+    [
+      options.hideDaughters,
+      options.hideFemale,
+      options.hideMale,
+      options.hideSons,
+    ],
+  );
+
   const getChildren = useCallback(
-    (member: FamilyMemberResponse) =>
-      (member.children ?? [])
+    (member: FamilyMemberResponse) => {
+      const currentDepth = depthByMemberId.get(member.id) ?? 1;
+      if (currentDepth >= normalizedGenerationLimit) return [];
+
+      return (member.children ?? [])
         .map((id) => memberMap.get(id))
-        .filter((m): m is FamilyMemberResponse => !!m),
-    [memberMap],
+        .filter((m): m is FamilyMemberResponse => {
+          if (!m) return false;
+          if (shouldHideChild(m)) return false;
+          const childDepth = depthByMemberId.get(m.id) ?? currentDepth + 1;
+          return childDepth <= normalizedGenerationLimit;
+        });
+    },
+    [depthByMemberId, memberMap, normalizedGenerationLimit, shouldHideChild],
   );
 
   const getSpouse = useCallback(
     (member: FamilyMemberResponse) => {
       const spouseId = (member.spouses ?? []).find((id) => memberMap.has(id));
-      return spouseId ? memberMap.get(spouseId) : undefined;
+      if (!spouseId) return undefined;
+      const spouse = memberMap.get(spouseId);
+      if (!spouse || shouldHideSpouse(spouse)) return undefined;
+      return spouse;
     },
-    [memberMap],
+    [memberMap, shouldHideSpouse],
   );
 
   const setSelectedRootId = useCallback((id: number) => {
