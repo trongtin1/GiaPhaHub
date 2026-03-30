@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import MemberForm from "@/components/MemberForm";
 import DiagramHeader from "@/pages/FamilyTree/components/DiagramHeader";
 import { useFamily } from "@/context/useFamily";
 import { useFamilyId } from "@/hooks/useFamilyId";
@@ -39,25 +38,13 @@ export default function FamilyGrid() {
   const navigate = useNavigate();
   const familyId = useFamilyId();
   const { members, deleteMember, loadMembers } = useFamily();
-  const [formOpen, setFormOpen] = useState(false);
-  const [editMember, setEditMember] = useState<FamilyMemberResponse | null>(
-    null,
-  );
+
   const [deleteConfirm, setDeleteConfirm] =
     useState<FamilyMemberResponse | null>(null);
 
   useEffect(() => {
     loadMembers();
   }, [loadMembers]);
-
-  const handleEdit = (member: FamilyMemberResponse) => {
-    setEditMember(member);
-    setFormOpen(true);
-  };
-
-  const handleDelete = (member: FamilyMemberResponse) => {
-    setDeleteConfirm(member);
-  };
 
   const confirmDelete = () => {
     if (deleteConfirm) {
@@ -180,11 +167,7 @@ export default function FamilyGrid() {
                         </Tooltip>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              onClick={() => handleEdit(m)}
-                            >
+                            <Button variant="ghost" size="icon-sm">
                               <Pencil size={14} />
                             </Button>
                           </TooltipTrigger>
@@ -196,7 +179,6 @@ export default function FamilyGrid() {
                               variant="ghost"
                               size="icon-sm"
                               className="text-destructive hover:text-destructive"
-                              onClick={() => handleDelete(m)}
                             >
                               <Trash2 size={14} />
                             </Button>
@@ -212,15 +194,6 @@ export default function FamilyGrid() {
           )}
         </div>
       </TooltipProvider>
-
-      <MemberForm
-        open={formOpen}
-        onClose={() => {
-          setFormOpen(false);
-          setEditMember(null);
-        }}
-        editMember={editMember}
-      />
 
       <Dialog
         open={!!deleteConfirm}

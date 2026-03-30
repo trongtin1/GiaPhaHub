@@ -10,9 +10,9 @@ import {
   Users,
   FileText,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useFamily } from "@/context/useFamily";
-import MemberForm from "@/components/MemberForm";
+
 import MemberCard from "@/pages/Member/MemberDetail/MemberCard";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import { useFamilyId } from "@/hooks/useFamilyId";
@@ -32,7 +32,7 @@ export default function MemberDetail() {
   const familyId = useFamilyId();
   const { getMember, getChildren, getSpouse, getParent, loading, loadMembers } =
     useFamily();
-  const [editOpen, setEditOpen] = useState(false);
+
   const memberId = Number(id);
   const member = getMember(memberId);
 
@@ -138,10 +138,7 @@ export default function MemberDetail() {
         >
           <ArrowLeft size={18} /> Quay lại
         </button>
-        <button
-          className="inline-flex items-center gap-2 px-5 py-2.5 border-none rounded-lg text-sm font-semibold cursor-pointer transition-all duration-150 text-white bg-linear-to-r from-amber-500 to-orange-600 shadow-sm hover:-translate-y-px hover:shadow-md"
-          onClick={() => setEditOpen(true)}
-        >
+        <button className="inline-flex items-center gap-2 px-5 py-2.5 border-none rounded-lg text-sm font-semibold cursor-pointer transition-all duration-150 text-white bg-linear-to-r from-amber-500 to-orange-600 shadow-sm hover:-translate-y-px hover:shadow-md">
           <Pencil size={16} /> Chỉnh sửa
         </button>
       </div>
@@ -284,12 +281,6 @@ export default function MemberDetail() {
           </div>
         </div>
       </div>
-
-      <MemberForm
-        open={editOpen}
-        onClose={() => setEditOpen(false)}
-        editMember={member}
-      />
     </div>
   );
 }

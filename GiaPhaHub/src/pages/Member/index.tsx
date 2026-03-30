@@ -21,8 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFamily } from "@/context/useFamily";
-import MemberForm from "@/components/MemberForm";
-import MemberDetailDialog from "@/components/MemberDetailDialog";
+
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import { paths } from "@/router/paths";
 import dayjs from "dayjs";
@@ -35,9 +34,7 @@ export default function Members() {
   const [search, setSearch] = useState("");
   const [filterGender, setFilterGender] = useState("");
   const [filterGen, setFilterGen] = useState("");
-  const [formOpen, setFormOpen] = useState(false);
   const [page, setPage] = useState(1);
-  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
 
   const generations = [...new Set(members.map((m) => m.generation))].sort();
 
@@ -58,10 +55,6 @@ export default function Members() {
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  const handleAdd = () => {
-    setFormOpen(true);
-  };
 
   const hasFilters = search.trim().length > 0 || !!filterGender || !!filterGen;
 
@@ -92,10 +85,7 @@ export default function Members() {
                 </span>
               </div>
             </div>
-            <Button
-              className="h-10 rounded-xl bg-linear-to-r from-amber-500 to-orange-600 px-5 text-sm font-semibold text-white shadow-sm hover:-translate-y-px"
-              onClick={handleAdd}
-            >
+            <Button className="h-10 rounded-xl bg-linear-to-r from-amber-500 to-orange-600 px-5 text-sm font-semibold text-white shadow-sm hover:-translate-y-px">
               <Plus size={16} /> Thêm thành viên
             </Button>
           </div>
@@ -197,7 +187,6 @@ export default function Members() {
               <Card
                 key={member.id}
                 className={`overflow-hidden rounded-3xl border bg-white shadow-[0_10px_30px_rgba(15,23,42,0.07)] transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_38px_rgba(15,23,42,0.1)] cursor-pointer ${member.deathDate ? "border-slate-300/80 opacity-85" : "border-slate-200/90"}`}
-                onClick={() => setSelectedMemberId(member.id)}
               >
                 <CardContent className="p-4 sm:p-5">
                   <div className="flex items-start justify-between gap-3">
@@ -325,20 +314,6 @@ export default function Members() {
           </div>
         </div>
       )}
-
-      <MemberForm
-        open={formOpen}
-        onClose={() => {
-          setFormOpen(false);
-        }}
-        editMember={null}
-      />
-
-      <MemberDetailDialog
-        memberId={selectedMemberId}
-        open={selectedMemberId !== null}
-        onClose={() => setSelectedMemberId(null)}
-      />
     </div>
   );
 }

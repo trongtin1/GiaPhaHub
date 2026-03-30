@@ -121,8 +121,8 @@ export default function FamilyTree() {
 
         {/* React Flow canvas */}
         <div
-          className="w-full overflow-hidden rounded-2xl border border-gray-200 shadow-sm"
-          style={{ height: "calc(100vh - 300px)" }}
+          className="w-full overflow-hidden rounded-2xl border border-gray-200 shadow-sm resize-y"
+          style={{ height: "calc(100vh - 300px)", minHeight: "400px" }}
         >
           {loading ? (
             <div className="flex items-center justify-center h-full text-lg text-gray-400">
